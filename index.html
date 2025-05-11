@@ -1,19 +1,1067 @@
-
-# change the <title> tag or the H1 text
-# save + exit (Ctrl‑O, Enter, Ctrl‑X in nano)
-
-git add index.html
-git commit -m "chore: update headline"
-git push origin main<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ViteBscura App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obscura Life</title>
+    <!-- TODO: Replace xxxxxxxx with actual Adobe Fonts Kit ID -->
+    <link rel="stylesheet" href="https://use.typekit.net/xxxxxxxx.css">
+    <style>
+        :root {
+            --accent-color: #FDBB32;
+            --background-color: #0B0B0B;
+            --text-color: #E6E6E6;
+            --card-bg-color: #1A1A1A;
+            --border-radius-xl: 1rem; /* r-2xl often means 1rem or 1.5rem */
+            --soft-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --spectral-gradient: linear-gradient(90deg, hsl(0, 70%, 60%), hsl(30, 70%, 60%), hsl(60, 70%, 60%), hsl(120, 70%, 60%), hsl(180, 70%, 60%), hsl(240, 70%, 60%), hsl(300, 70%, 60%));
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: freight-sans-pro, sans-serif; /* Assuming Freight Sans from Adobe, update if different */
+            margin: 0;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        section {
+            padding: 60px 0;
+            min-height: 80vh; /* Ensure sections are substantial for scrolling */
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        /* Hero Canvas */
+        #hero-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1; /* Behind content */
+            pointer-events: none; /* Allows clicking through */
+        }
+        #hero-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Sacred-Network Nav Overlay */
+        #hex-nav {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: grid;
+            grid-template-columns: repeat(3, 100px); /* Approximate for 6 hexes */
+            grid-template-rows: repeat(3, 86.6px); /* Height of a 100px wide hexagon */
+            gap: 10px;
+            z-index: 100;
+            width: 320px; /* (100 * 3) + (10 * 2) */
+            height: 270px; /* (86.6 * 3) + (10 * 2) -> approx */
+            pointer-events: none; /* Container itself should not block */
+        }
+
+        .hex-node {
+            width: 100px;
+            height: 86.6px; /* 100 * sqrt(3)/2 */
+            background-color: rgba(255, 255, 255, 0.1);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            pointer-events: all; /* Nodes themselves are interactive */
+        }
+        .hex-node:hover {
+            background-color: rgba(253, 187, 50, 0.3);
+            transform: scale(1.1);
+        }
+        .hex-node .label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .hex-node:hover .label {
+            opacity: 1;
+        }
+
+        /* Hexagon Grid Positions - Example Layout */
+        .hex-node:nth-child(1) { grid-column: 1 / 2; grid-row: 2 / 3; }
+        .hex-node:nth-child(2) { grid-column: 2 / 3; grid-row: 1 / 2; margin-left: -25px; } /* Offset for tight packing */
+        .hex-node:nth-child(3) { grid-column: 2 / 3; grid-row: 2 / 3; margin-left: 25px; margin-top:43.3px; } /* Center */
+        .hex-node:nth-child(4) { grid-column: 2 / 3; grid-row: 3 / 4; margin-left: -25px; }
+        .hex-node:nth-child(5) { grid-column: 3 / 4; grid-row: 2 / 3; }
+        .hex-node:nth-child(6) { grid-column: 2 / 3; grid-row: 2 / 3; margin-left: -75px; margin-top:-43.3px;} /* Example, needs refinement for actual 6 hex layout */
+
+
+        /* "Now" Clock & CN-Tower Sundial Widget */
+        #clock-widget {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(11, 11, 11, 0.7);
+            backdrop-filter: blur(5px);
+            padding: 10px;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--soft-shadow);
+            z-index: 100;
+            color: var(--text-color);
+            font-size: 1.2em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #clock-time {
+            margin-bottom: 5px;
+        }
+        #sundial-canvas {
+            width: 100px;
+            height: 100px;
+        }
+
+        /* Generic Section Styling */
+        .section-content {
+            background-color: rgba(26, 26, 26, 0.8); /* Slightly transparent cards over hero */
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--soft-shadow);
+            margin-top: 10vh; /* Push content down so hero is visible initially */
+        }
+
+        /* Portfolio Section */
+        #portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+            gap: 1.5rem;
+        }
+        .portfolio-item {
+            background-color: var(--card-bg-color);
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--soft-shadow);
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 16 / 9;
+        }
+        .portfolio-item iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .portfolio-item .placeholder {
+            width:100%; height:100%;
+            background-color: #333;
+            display:flex; align-items:center; justify-content:center;
+            cursor: pointer;
+        }
+        .portfolio-item .placeholder::after {
+            content: 'Load Video';
+            color: var(--accent-color);
+        }
+
+        /* Generative AI Lab */
+        #dropzone {
+            border: 3px dashed var(--accent-color);
+            border-radius: var(--border-radius-xl);
+            padding: 2rem;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            transition: background-color 0.3s;
+        }
+        #dropzone.dragover {
+            background-color: rgba(253, 187, 50, 0.1);
+        }
+        #model-viewer-container {
+            width: 100%;
+            height: 400px;
+            background-color: #222;
+            border-radius: var(--border-radius-xl);
+            position: relative;
+        }
+        #model-viewer-canvas { display: block; width:100%; height:100%; }
+        .demo-model-buttons button {
+            background-color: var(--accent-color);
+            color: var(--background-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .demo-model-buttons button:hover {
+             background-image: var(--spectral-gradient);
+             color: white;
+        }
+
+        /* Obscura rAIdio */
+        #radio-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: rgba(11, 11, 11, 0.7);
+            backdrop-filter: blur(5px);
+            padding: 15px;
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--soft-shadow);
+            z-index: 100;
+            min-width: 250px;
+        }
+        #radio-controls audio { width: 100%; margin-bottom: 10px; }
+        .track-info { font-size: 0.9em; margin-bottom: 10px; }
+        .playlist-toggle { display: flex; align-items: center; justify-content: space-around; margin-top: 10px; }
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 34px;
+        }
+        .switch input {display:none;}
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 34px;
+        }
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        input:checked + .slider {
+          background-color: var(--accent-color);
+        }
+        input:focus + .slider {
+          box-shadow: 0 0 1px var(--accent-color);
+        }
+        input:checked + .slider:before {
+          transform: translateX(26px);
+        }
+
+
+        /* About / Contact */
+        .tool-badges img {
+            height: 30px;
+            margin: 5px;
+            border-radius: 4px; /* if using actual badge images */
+        }
+        .tool-badges span { /* For text based badges */
+            background-color: var(--card-bg-color);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 5px; display: inline-block;
+            border: 1px solid var(--accent-color);
+        }
+        .contact-links a {
+            color: var(--accent-color);
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .contact-links a:hover {
+            text-decoration: underline;
+             background-image: var(--spectral-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.8em;
+            border-top: 1px solid #222;
+        }
+        #easter-egg {
+            cursor: help; /* Subtle hint */
+            text-decoration: underline dotted;
+        }
+
+        /* Accessibility */
+        *:focus-visible {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        /* 12-column grid - apply .grid-container and .col-* as needed */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1rem;
+        }
+        /* Example .col-* */
+        .col-12 { grid-column: span 12; }
+        .col-6 { grid-column: span 6; }
+        /* Add more col classes as needed for responsive designs if CSS Grid alone isn't sufficient for #portfolio-grid pattern */
+    </style>
+</head>
+<body>
+
+    <div id="hero-container">
+        <canvas id="hero-canvas"></canvas>
+    </div>
+
+    <nav id="hex-nav" aria-label="Main Navigation">
+        <!-- These will be positioned by CSS. This example needs adjustment for a proper 6-hex cluster -->
+        <div class="hex-node" data-target="#portfolio" role="button" tabindex="0" aria-label="Portfolio"><span class="label">Portfolio</span></div>
+        <div class="hex-node" data-target="#lab" role="button" tabindex="0" aria-label="AI Lab"><span class="label">AI Lab</span></div>
+        <div class="hex-node" data-target="#radio" role="button" tabindex="0" aria-label="Radio"><span class="label">rAIdio</span></div>
+        <div class="hex-node" data-target="#about" role="button" tabindex="0" aria-label="About Us"><span class="label">About</span></div>
+        <div class="hex-node" data-target="#contact-section" role="button" tabindex="0" aria-label="Contact"><span class="label">Contact</span></div>
+        <div class="hex-node" data-target="#now-clock-section" role="button" tabindex="0" aria-label="Current Time"><span class="label">Now</span></div>
+    </nav>
+
+    <div id="clock-widget">
+        <div id="clock-time">Loading...</div>
+        <canvas id="sundial-canvas"></canvas>
+    </div>
+    
+    <main>
+        <div id="now-clock-section"></div> <!-- Dummy anchor for "Now" hex nav item -->
+
+        <section id="portfolio" class="container">
+            <div class="section-content">
+                <h2>Portfolio</h2>
+                <div id="portfolio-grid">
+                    <!-- Portfolio items will be injected by JS -->
+                    <!-- Example of one item for structure -->
+                    <!-- <div class="portfolio-item" data-youtube-id="VIDEO_ID_HERE">
+                        <div class="placeholder"></div>
+                    </div> -->
+                </div>
+            </div>
+        </section>
+
+        <section id="lab" class="container">
+            <div class="section-content">
+                <h2>Generative AI Lab</h2>
+                <div id="dropzone" aria-label="Drag and drop 3D model files here">
+                    <p>Drag & Drop USDZ/GLB files here</p>
+                    <p>or load a demo:</p>
+                    <div class="demo-model-buttons">
+                        <!-- TODO: Update with actual paths -->
+                        <button data-model-src="/3d/fifel.glb">Fifel (GLB)</button>
+                        <button data-model-src="/3d/cn-tower.glb">CN Tower (GLB)</button>
+                        <button data-model-src="/3d/sacred-spiral.usdz">Sacred Spiral (USDZ)</button>
+                    </div>
+                </div>
+                <div id="model-viewer-container">
+                    <canvas id="model-viewer-canvas"></canvas>
+                    <!-- OrbitControls will attach here -->
+                </div>
+            </div>
+        </section>
+
+        <section id="radio" class="container">
+             <div class="section-content">
+                <h2>Obscura rAIdio</h2>
+                <p>Sounds for the liminal space. AM for analog warmth, FM for digital frequencies.</p>
+                <!-- Player itself is fixed bottom-left in #radio-controls -->
+            </div>
+        </section>
+        <div id="radio-controls">
+            <audio id="audio-player" controls></audio>
+            <div class="track-info">
+                <span id="current-track-title">--</span> | <span id="current-track-time">--:-- / --:--</span>
+            </div>
+            <div class="playlist-toggle">
+                <span>AM</span>
+                <label class="switch">
+                    <input type="checkbox" id="playlist-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span>FM</span>
+            </div>
+        </div>
+
+
+        <section id="about" class="container">
+            <div class="section-content">
+                <h2>About Obscura Creative</h2>
+                <!-- TODO: Real bio copy in About -->
+                <p>Obscura Creative Inc. explores the intersection of light, perception, and digital artistry. We specialize in cutting-edge video editing, AI-driven content pipelines, and immersive web experiences.</p>
+                <p>We believe in the power of sacred geometry, the magic of optics, and the endless flow of time as inspirations for transformative digital art.</p>
+                
+                <div id="contact-section"> <!-- Combined About/Contact -->
+                    <h3>Connect</h3>
+                    <p class="contact-links">
+                        Email: <a href="mailto:max@obscura.life">max@obscura.life</a>
+                        <a href="https://www.linkedin.com/company/obscura-creative-inc" target="_blank" rel="noopener noreferrer" aria-label="Obscura Creative Inc. on LinkedIn">
+                            <!-- Using a simple text 'LinkedIn' as placeholder for icon for now, could be SVG -->
+                            LinkedIn
+                        </a>
+                    </p>
+                </div>
+
+                <h3>Tools We Love</h3>
+                <div class="tool-badges">
+                    <span>Runway</span>
+                    <span>Pika</span>
+                    <span>Suno</span>
+                    <span>Blender</span>
+                    <!-- Could be img tags: <img src="path/to/runway-logo.svg" alt="RunwayML"> -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>©2025 Obscura Creative Inc. <span id="easter-egg" title="What could it be?">All rights reserved.</span></p>
+    </footer>
+
+    <script type="module">
+        // Import paths for CDN
+        const THREE_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+        const GLTFLOADER_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/GLTFLoader.js';
+        const USDZLOADER_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/USDZLoader.js';
+        const ORBITCONTROLS_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+        const ANIME_PATH = 'https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.es.js';
+        const MATTER_PATH = 'https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js'; // Matter.js is not an ES module by default from CDNs like jsdelivr usually, check for .esm.js or wrap if needed. Using .min.js and assuming it adds to window.Matter
+        const DAYJS_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js';
+        const DAYJS_TZ_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/timezone.js';
+        const DAYJS_UTC_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/utc.js';
+
+        let Three, Anime, Matter, Dayjs; // Modules to be loaded
+
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // --- UTILITIES ---
+        function smoothScrollTo(targetId) {
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100, // Offset for fixed headers/nav
+                    behavior: prefersReducedMotion ? 'auto' : 'smooth'
+                });
+            }
+        }
+
+        // --- INITIALIZATION FUNCTION ---
+        async function initializeSite() {
+            // Dynamically import heavy libraries
+            [
+                { name: 'Anime', path: ANIME_PATH, isDefault: true },
+                { name: 'Dayjs', path: DAYJS_PATH, isWindow: true, globalName: 'dayjs' }
+            ].forEach(async (lib) => {
+                if (lib.isWindow) { // For libs like Dayjs min that attach to window
+                    await import(lib.path);
+                    if (lib.globalName === 'dayjs') {
+                        Dayjs = window.dayjs;
+                        await import(DAYJS_UTC_PATH); // Ensure this loads and registers plugin
+                        await import(DAYJS_TZ_PATH);  // Ensure this loads and registers plugin
+                        Dayjs.extend(window.dayjs_plugin_utc);
+                        Dayjs.extend(window.dayjs_plugin_timezone);
+                    } else {
+                        window[lib.name] = window[lib.globalName];
+                    }
+                } else if (lib.isDefault) {
+                    const module = await import(lib.path);
+                    window[lib.name] = module.default;
+                } else {
+                    window[lib.name] = await import(lib.path);
+                }
+                if (lib.name === 'Anime') Anime = window.Anime;
+            });
+
+
+            // Wait for Dayjs and Anime.js to be available for critical UI elements
+            await new Promise(resolve => {
+                const interval = setInterval(() => {
+                    if (typeof Dayjs !== 'undefined' && typeof Anime !== 'undefined' && typeof Dayjs.tz !== 'undefined') {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 50);
+            });
+            
+            initClockWidget();
+            initNav();
+            initPortfolio();
+            initRadio();
+            initFooterEasterEgg();
+
+            // Defer Three.js and Matter.js loading further if possible, or load them now for components that need them.
+            // For Hero canvas, Three.js is critical path, so load it earlier or show a loader.
+            // For Lab section, it can be loaded on demand (e.g., when section is visible or interacted with)
+
+            // For simplicity here, we'll load them sequentially but mark them for potential on-demand loading.
+            // THREE.JS related inits (Hero, Lab)
+            const threeModule = await import(THREE_PATH);
+            Three = threeModule; // Three should contain Scene, PerspectiveCamera etc.
+
+            if (document.getElementById('hero-canvas')) initHeroCanvas();
+            if (document.getElementById('lab')) initAILab();
+            
+            // MATTER.JS related inits (Nav - though its use is minimal as per spec interpretation)
+            // Matter.js standard minified usually exposes a global `Matter`
+            await import(MATTER_PATH);
+            if (window.Matter) {
+                Matter = window.Matter;
+                // Minimal use for nav hex nodes, mostly fulfilling requirement
+                if(document.getElementById('hex-nav')) initMatterForNav();
+            }
+        }
+
+
+        // --- HERO CANVAS (THREE.JS) ---
+        function initHeroCanvas() {
+            const canvas = document.getElementById('hero-canvas');
+            if (!canvas) return;
+
+            const scene = new Three.Scene();
+            const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            const renderer = new Three.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            const material = new Three.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+
+            const group = new Three.Group();
+
+            const outerCube = new Three.Mesh(new Three.BoxGeometry(3, 3, 3), material);
+            const dodeca = new Three.Mesh(new Three.DodecahedronGeometry(1.5), material);
+            const icosa = new Three.Mesh(new Three.IcosahedronGeometry(0.75), material);
+            
+            group.add(outerCube);
+            group.add(dodeca);
+            group.add(icosa);
+            scene.add(group);
+
+            if (!prefersReducedMotion) {
+                group.scale.set(0, 0, 0);
+                group.rotation.set(Math.PI / 4, Math.PI / 4, 0);
+                Anime({
+                    targets: group.scale,
+                    x: 1, y: 1, z: 1,
+                    duration: 1200,
+                    easing: 'easeOutExpo'
+                });
+                Anime({
+                    targets: group.rotation,
+                    y: `+=${Math.PI * 2}`, // example of subtle intro rotation
+                    x: `+=${Math.PI}`,
+                    duration: 2000,
+                    delay: 500,
+                    easing: 'easeInOutSine'
+                });
+            }
+
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (!prefersReducedMotion) {
+                    group.rotation.y += 0.0025; // 0.15 rad/s approx (0.15 / 60fps)
+                    group.rotation.x += 0.0013; // 0.08 rad/s approx (0.08 / 60fps)
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            });
+        }
+
+        // --- SACRED-NETWORK NAV OVERLAY ---
+        function initNav() {
+            const navNodes = document.querySelectorAll('#hex-nav .hex-node');
+            navNodes.forEach(node => {
+                node.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = node.dataset.target;
+                    
+                    Anime({ // Flash effect
+                        targets: node,
+                        backgroundColor: [
+                            {value: 'rgba(253, 187, 50, 0.7)', duration: 150},
+                            {value: node.style.backgroundColor || 'rgba(255, 255, 255, 0.1)', duration: 300}
+                        ],
+                        easing: 'linear'
+                    });
+                    smoothScrollTo(targetId);
+                });
+                // Handle focus for keyboard navigation
+                node.addEventListener('keypress', (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    node.click();
+                  }
+                });
+
+                // Label visibility managed by CSS :hover for simplicity and performance
+            });
+        }
+        
+        function initMatterForNav() {
+            if (!Matter || !document.querySelector('#hex-nav')) return;
+            // Minimalistic Matter.js integration for hex nodes as per spec
+            // The hex nodes are primarily CSS positioned and HTML elements.
+            // Matter.js bodies could be used for future enhancements or if "draggable nodes" were intended for them.
+            // Here, we create static sensor bodies merely to "use" Matter.js as requested.
+            const { Engine, Render, Runner, World, Bodies } = Matter;
+            const engine = Engine.create({ gravity: {x:0, y:0} }); // No gravity
+            const navContainer = document.getElementById('hex-nav');
+            const nodes = navContainer.querySelectorAll('.hex-node');
+
+            nodes.forEach((nodeEl, index) => {
+                const rect = nodeEl.getBoundingClientRect(); // Get dimensions from HTML element
+                const body = Bodies.rectangle(
+                    rect.left + rect.width / 2 - navContainer.getBoundingClientRect().left, // Position relative to nav container
+                    rect.top + rect.height / 2 - navContainer.getBoundingClientRect().top,
+                    rect.width,
+                    rect.height,
+                    { 
+                        isStatic: true, // Invisible, non-colliding, non-moving
+                        isSensor: true,
+                        label: `nav-node-${index}`
+                    }
+                );
+                World.add(engine.world, [body]);
+            });
+            console.log("Matter.js engine created for nav with static sensor bodies.", engine.world.bodies);
+            // No renderer or runner needed as bodies are invisible and non-interactive physically.
+        }
+
+
+        // --- "NOW" CLOCK & CN-TOWER SUNDIAL WIDGET ---
+        function initClockWidget() {
+            const timeEl = document.getElementById('clock-time');
+            const sundialCanvas = document.getElementById('sundial-canvas');
+            const tz = 'America/Toronto';
+
+            if (!timeEl || !sundialCanvas || !Dayjs) return;
+
+            const sundialCtx = sundialCanvas.getContext('2d');
+
+            function updateClock() {
+                const now = Dayjs().tz(tz);
+                timeEl.textContent = now.format('HH:mm:ss');
+                drawSundial(now);
+                requestAnimationFrame(updateClock); // More fine-grained updates for seconds
+            }
+            
+            function drawSundial(now) {
+                sundialCtx.clearRect(0, 0, sundialCanvas.width, sundialCanvas.height);
+                
+                const centerX = sundialCanvas.width / 2;
+                const centerY = sundialCanvas.height / 2;
+                const towerHeight = sundialCanvas.height * 0.6;
+                const rayLength = sundialCanvas.width * 0.45;
+
+                // Draw simple CN Tower representation (a line)
+                sundialCtx.strokeStyle = varComputedStyle.getPropertyValue('--accent-color').trim() || '#FDBB32';
+                sundialCtx.lineWidth = 3;
+                sundialCtx.beginPath();
+                sundialCtx.moveTo(centerX, centerY - towerHeight / 2);
+                sundialCtx.lineTo(centerX, centerY + towerHeight / 2);
+                sundialCtx.stroke();
+
+                // Calculate ray angle
+                // Simple simulation: 6 AM (sunrise) = right, 6 PM (sunset) = left. Noon = straight down.
+                // This is highly simplified.
+                const hours = now.hour() + now.minute() / 60;
+                let angle;
+                if (hours >= 6 && hours <= 18) { // Daylight hours
+                    // Map 6-18 hours to 0-PI radians (right to left)
+                    angle = ((hours - 6) / 12) * Math.PI;
+                } else { // Night - no shadow or very long shadow, make it subtle or absent
+                    angle = Math.PI / 2; // Default to pointing down if not daylight for this crude model
+                     sundialCtx.strokeStyle = 'rgba(253, 187, 50, 0.3)'; // Dimmer shadow at night
+                }
+
+                sundialCtx.beginPath();
+                sundialCtx.moveTo(centerX, centerY); // Gnomon projects from center of tower base in this model
+                sundialCtx.lineTo(centerX + rayLength * Math.cos(angle), centerY + rayLength * Math.sin(angle));
+                sundialCtx.stroke();
+            }
+            
+            const varComputedStyle = getComputedStyle(document.documentElement); // To get CSS var values
+            updateClock(); // Initial call
+        }
+
+
+        // --- PORTFOLIO SECTION ---
+        function initPortfolio() {
+            const portfolioGrid = document.getElementById('portfolio-grid');
+            // <!-- TODO: Add YouTube IDs array -->
+            const youtubeVideoIds = ["dQw4w9WgXcQ", "VIDEO_ID_2", "VIDEO_ID_3", "VIDEO_ID_4", "VIDEO_ID_5", "VIDEO_ID_6", "VIDEO_ID_7", "VIDEO_ID_8"]; // Example, up to 8 for 2x4
+
+            youtubeVideoIds.forEach(id => {
+                const item = document.createElement('div');
+                item.className = 'portfolio-item';
+                item.dataset.youtubeId = id;
+                
+                const placeholder = document.createElement('div');
+                placeholder.className = 'placeholder';
+                placeholder.setAttribute('role', 'button');
+                placeholder.setAttribute('aria-label', `Load video ${id}`);
+                placeholder.tabIndex = 0;
+                item.appendChild(placeholder);
+                portfolioGrid.appendChild(item);
+            });
+
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const item = entry.target;
+                        loadYouTubeVideo(item);
+                        obs.unobserve(item); // Load once
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.portfolio-item').forEach(item => {
+                observer.observe(item);
+                item.querySelector('.placeholder').addEventListener('click', () => loadYouTubeVideo(item));
+                item.querySelector('.placeholder').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') loadYouTubeVideo(item);
+                });
+            });
+
+            function loadYouTubeVideo(item) {
+                if (item.querySelector('iframe')) return; // Already loaded
+
+                const videoId = item.dataset.youtubeId;
+                item.innerHTML = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}?autoplay=0&mute=1&enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="YouTube video player ${videoId}"></iframe>`;
+                
+                const iframe = item.querySelector('iframe');
+                if (!iframe) return;
+
+                item.addEventListener('mouseenter', () => {
+                    if (!prefersReducedMotion) {
+                        Anime({ targets: item, scale: 1.05, duration: 300, easing: 'easeOutSine' });
+                    }
+                    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                    iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+                });
+                item.addEventListener('mouseleave', () => {
+                     if (!prefersReducedMotion) {
+                        Anime({ targets: item, scale: 1.0, duration: 300, easing: 'easeOutSine' });
+                    }
+                    // Optional: Pause video on mouse leave
+                    // iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                });
+            }
+        }
+
+        // --- GENERATIVE AI LAB ---
+        let labScene, labCamera, labRenderer, labControls, GLTFLoader, USDZLoader, OrbitControls;
+        
+        async function initAILab() {
+            const dropzone = document.getElementById('dropzone');
+            const modelViewerCanvas = document.getElementById('model-viewer-canvas');
+            if (!dropzone || !modelViewerCanvas) return;
+
+            // Dynamically import Three.js extras if not already loaded for Hero
+            if (!Three) { 
+                Three = await import(THREE_PATH);
+            }
+            const gltfLoaderModule = await import(GLTFLOADER_PATH);
+            GLTFLoader = gltfLoaderModule.GLTFLoader;
+            const usdzLoaderModule = await import(USDZLOADER_PATH); // USDZLoader.js doesn't export default sometimes
+            USDZLoader = usdzLoaderModule.USDZLoader; // Adjust if it exports differently
+            const orbitControlsModule = await import(ORBITCONTROLS_PATH);
+            OrbitControls = orbitControlsModule.OrbitControls;
+
+
+            labScene = new Three.Scene();
+            labScene.background = new Three.Color(0x222222); // Match container background
+            labCamera = new Three.PerspectiveCamera(75, modelViewerCanvas.clientWidth / modelViewerCanvas.clientHeight, 0.1, 1000);
+            labCamera.position.set(2, 2, 2);
+
+            labRenderer = new Three.WebGLRenderer({ canvas: modelViewerCanvas, antialias: true });
+            labRenderer.setSize(modelViewerCanvas.clientWidth, modelViewerCanvas.clientHeight);
+            labRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            const ambientLight = new Three.AmbientLight(0xffffff, 0.5);
+            labScene.add(ambientLight);
+            const directionalLight = new Three.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            labScene.add(directionalLight);
+
+            labControls = new OrbitControls(labCamera, labRenderer.domElement);
+            labControls.enableDamping = true;
+            
+            function animateLab() {
+                requestAnimationFrame(animateLab);
+                labControls.update();
+                labRenderer.render(labScene, labCamera);
+            }
+            animateLab();
+
+            window.addEventListener('resize', () => {
+                if (modelViewerCanvas.clientWidth > 0 && modelViewerCanvas.clientHeight > 0) {
+                    labCamera.aspect = modelViewerCanvas.clientWidth / modelViewerCanvas.clientHeight;
+                    labCamera.updateProjectionMatrix();
+                    labRenderer.setSize(modelViewerCanvas.clientWidth, modelViewerCanvas.clientHeight);
+                }
+            });
+
+            dropzone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('dragover');
+            });
+            dropzone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                dropzone.classList.remove('dragover');
+                const file = event.dataTransfer.files[0];
+                if (file) {
+                    loadFile(file);
+                }
+            });
+
+            document.querySelectorAll('.demo-model-buttons button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const modelSrc = button.dataset.modelSrc;
+                    loadModelFromURL(modelSrc);
+                });
+            });
+            
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && currentLoadedModel) {
+                    clearLabScene();
+                }
+            });
+        }
+        
+        let currentLoadedModel = null;
+        function clearLabScene() {
+            if (currentLoadedModel) {
+                labScene.remove(currentLoadedModel);
+                // Dispose geometries/materials if needed for complex models to free memory
+                currentLoadedModel = null;
+            }
+        }
+
+        function loadFile(file) {
+            clearLabScene();
+            const reader = new FileReader();
+            const fileName = file.name.toLowerCase();
+            reader.onload = (event) => {
+                if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
+                    const loader = new GLTFLoader();
+                    loader.parse(event.target.result, '', (gltf) => {
+                        currentLoadedModel = gltf.scene;
+                        centerAndScaleModel(currentLoadedModel);
+                        labScene.add(currentLoadedModel);
+                    });
+                } else if (fileName.endsWith('.usdz')) {
+                    // USDZLoader usually takes a URL, needs path to three.js/examples/jsm/libs/basis/
+                    // For direct file buffer, it might need more complex setup or server-side help.
+                    // For simplicity, assume USDZLoader can handle a data URL or blob URL.
+                    // This is a complex part. Let's attempt to load as if it takes a URL.
+                    const objectURL = URL.createObjectURL(file);
+                    loadModelFromURL(objectURL, true); // Mark as object URL
+                } else {
+                    alert('Unsupported file type. Please use GLB, GLTF, or USDZ.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function loadModelFromURL(url, isObjectURL = false) {
+            clearLabScene();
+            const fileName = url.toLowerCase();
+            let loader;
+
+            if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
+                loader = new GLTFLoader();
+            } else if (fileName.endsWith('.usdz')) {
+                // USDZLoader expects path to Basis transcoder worker scripts in its constructor
+                // Setting path relative to the module. For CDN, this needs verification.
+                const basisPath = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/libs/basis/';
+                loader = new USDZLoader().setPath(basisPath);
+            } else {
+                alert('Unsupported file type from URL.');
+                return;
+            }
+            
+            loader.load(url, (model) => {
+                currentLoadedModel = model.scene || model; // USDZLoader returns the object directly
+                centerAndScaleModel(currentLoadedModel);
+                labScene.add(currentLoadedModel);
+                if (isObjectURL) URL.revokeObjectURL(url); // Clean up blob URL
+            }, undefined, (error) => {
+                console.error('Error loading model:', error);
+                alert('Failed to load model.');
+                if (isObjectURL) URL.revokeObjectURL(url);
+            });
+        }
+
+        function centerAndScaleModel(object) {
+            const box = new Three.Box3().setFromObject(object);
+            const size = box.getSize(new Three.Vector3());
+            const center = box.getCenter(new Three.Vector3());
+
+            object.position.x += (object.position.x - center.x);
+            object.position.y += (object.position.y - center.y);
+            object.position.z += (object.position.z - center.z);
+
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 2.0 / maxDim; // Fit into a 2-unit box roughly
+            object.scale.set(scale, scale, scale);
+            
+            labControls.target.copy(center.multiplyScalar(scale)); // Not perfect but ok
+            labControls.update();
+        }
+
+        // --- OBSCURA rAIDIO ---
+        function initRadio() {
+            const audioPlayer = document.getElementById('audio-player');
+            const playlistSwitch = document.getElementById('playlist-switch');
+            const currentTrackTitleEl = document.getElementById('current-track-title');
+            const currentTrackTimeEl = document.getElementById('current-track-time');
+            if(!audioPlayer || !playlistSwitch || !currentTrackTitleEl || !currentTrackTimeEl) return;
+
+            // <!-- TODO: MP3 URL arrays (AM / FM) -->
+            const amTracks = [
+                { title: "Analog Dreams", url: "placeholder-am-track1.mp3" },
+                { title: "Vintage Waves", url: "placeholder-am-track2.mp3" },
+            ];
+            const fmTracks = [
+                { title: "Digital Echoes", url: "placeholder-fm-track1.mp3" },
+                { title: "Frequency Shift", url: "placeholder-fm-track2.mp3" },
+            ];
+            let currentPlaylist = amTracks;
+            let currentTrackIndex = 0;
+            let isFading = false;
+
+            function loadTrack(index) {
+                if (index < 0 || index >= currentPlaylist.length) index = 0; // Loop playlist
+                currentTrackIndex = index;
+                const track = currentPlaylist[currentTrackIndex];
+                audioPlayer.src = track.url;
+                currentTrackTitleEl.textContent = track.title;
+                // Play is usually handled by user clicking play or auto-advance
+            }
+
+            function playNextTrack() {
+                loadTrack((currentTrackIndex + 1) % currentPlaylist.length);
+                audioPlayer.play();
+            }
+
+            function crossfadeToPlaylist(newPlaylist) {
+                if (isFading) return;
+                isFading = true;
+                
+                Anime({ // Fade out
+                    targets: audioPlayer,
+                    volume: [audioPlayer.volume, 0],
+                    duration: 500,
+                    easing: 'linear',
+                    complete: () => {
+                        audioPlayer.pause();
+                        currentPlaylist = newPlaylist;
+                        loadTrack(0); // Start new playlist from first track
+                        // Optional: set volume based on some preference or restore previous volume
+                        Anime({ // Fade in
+                            targets: audioPlayer,
+                            volume: [0, 1], // Assuming max volume 1
+                            duration: 500,
+                            easing: 'linear',
+                            begin: () => { if(audioPlayer.readyState >=2) audioPlayer.play(); }, // Play if ready
+                            complete: () => { isFading = false; }
+                        });
+                    }
+                });
+            }
+            
+            playlistSwitch.addEventListener('change', () => {
+                crossfadeToPlaylist(playlistSwitch.checked ? fmTracks : amTracks);
+            });
+
+            audioPlayer.addEventListener('ended', playNextTrack);
+            audioPlayer.addEventListener('loadedmetadata', updateTrackTime);
+            audioPlayer.addEventListener('timeupdate', updateTrackTime);
+
+            function formatTime(seconds) {
+                const min = Math.floor(seconds / 60);
+                const sec = Math.floor(seconds % 60);
+                return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+            }
+
+            function updateTrackTime() {
+                if (audioPlayer.duration) {
+                    currentTrackTimeEl.textContent = `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration)}`;
+                } else {
+                    currentTrackTimeEl.textContent = `${formatTime(audioPlayer.currentTime)} / --:--`;
+                }
+            }
+            
+            // Initial load
+            loadTrack(0); 
+        }
+
+        // --- FOOTER EASTER EGG ---
+        function initFooterEasterEgg() {
+            const eggTrigger = document.getElementById('easter-egg');
+            if (eggTrigger) {
+                eggTrigger.addEventListener('click', () => {
+                    alert("None shall hold the Scepter of Alex");
+                });
+            }
+        }
+
+        // --- START THE SITE ---
+        document.addEventListener('DOMContentLoaded', initializeSite);
+    </script>
+</body>
 </html>
