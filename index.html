@@ -200,6 +200,12 @@
             text-shadow:0 0 6px rgba(0,0,0,.6);
             pointer-events:none;
         }
+        .portfolio-intro {
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
 
         /* Generative AI Lab */
         #dropzone {
@@ -405,6 +411,9 @@
         <section id="portfolio" class="container">
             <div class="section-content">
                 <h2>Portfolio</h2>
+                <p class="portfolio-intro">
+                    Click any thumbnail to view the spot in full screen.
+                </p>
                 <div id="portfolio-grid">
                     <!-- Portfolio items will be injected by JS -->
                     <!-- Example of one item for structure -->
@@ -810,19 +819,18 @@
                             item.dataset.videoId = id;
                             item.setAttribute('aria-label', title);
 
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'placeholder';
-                        // Set YouTube thumbnail as background
-                        placeholder.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`;
-                        placeholder.setAttribute('role', 'button');
-                        placeholder.setAttribute('tabindex', '0');
-                        placeholder.setAttribute('aria-label', `Load video ${title}`);
+                            const placeholder = document.createElement('div');
+                            placeholder.className = 'placeholder';
+                            // Set YouTube thumbnail as background
+                            placeholder.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`;
+                            placeholder.setAttribute('role', 'button');
+                            placeholder.setAttribute('tabindex', '0');
+                            placeholder.setAttribute('aria-label', `Load video ${title}`);
 
                             item.appendChild(placeholder);
                             portfolioGrid.appendChild(item);
 
-                            // Spotlight first video (auto‑loads top‑left)
-                            if (currentPage === 0 && start === 0) openLightbox(id, title);
+                            // (Auto-open first video removed)
 
                             placeholder.addEventListener('click',   () => openLightbox(id, title));
                             placeholder.addEventListener('keypress',e => {
