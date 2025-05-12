@@ -738,22 +738,37 @@
         // --- PORTFOLIO SECTION ---
         function initPortfolio() {
             const portfolioGrid = document.getElementById('portfolio-grid');
-            // <!-- TODO: Add YouTube IDs array -->
-            const youtubeVideoIds = ["dQw4w9WgXcQ", "VIDEO_ID_2", "VIDEO_ID_3", "VIDEO_ID_4", "VIDEO_ID_5", "VIDEO_ID_6", "VIDEO_ID_7", "VIDEO_ID_8"]; // Example, up to 8 for 2x4
+            // Load video list from JSON and build the grid
+            fetch('/content/portfolio.json')
+                .then(r => r.json())
+                .then(list => {
+                    // Sort by Rank (numeric) if present
+                    list.sort((a, b) => (a.Rank || 0) - (b.Rank || 0));
 
-            youtubeVideoIds.forEach(id => {
-                const item = document.createElement('div');
-                item.className = 'portfolio-item';
-                item.dataset.youtubeId = id;
-                
-                const placeholder = document.createElement('div');
-                placeholder.className = 'placeholder';
-                placeholder.setAttribute('role', 'button');
-                placeholder.setAttribute('aria-label', `Load video ${id}`);
-                placeholder.tabIndex = 0;
-                item.appendChild(placeholder);
-                portfolioGrid.appendChild(item);
-            });
+                    list.forEach(entry => {
+                        const id   = entry.VideoID || entry.id || entry.videoId;
+                        const title = entry.Title || entry.title || '';
+
+                        if (!id) return; // skip malformed rows
+
+                        const item = document.createElement('div');
+                        item.className = 'portfolio-item';
+                        item.dataset.youtubeId = id;
+                        item.setAttribute('aria-label', title);
+
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'placeholder';
+                        placeholder.setAttribute('role', 'button');
+                        placeholder.setAttribute('aria-label', `Load video ${title}`);
+                        placeholder.tabIndex = 0;
+
+                        item.appendChild(placeholder);
+                        portfolioGrid.appendChild(item);
+                    });
+                })
+                .catch(err => {
+                    console.error('Failed to load portfolio.json', err);
+                });
 
             const observer = new IntersectionObserver((entries, obs) => {
                 entries.forEach(entry => {
