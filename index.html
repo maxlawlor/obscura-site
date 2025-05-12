@@ -156,6 +156,7 @@
         #sundial-canvas {
             width: 100px;
             height: 100px;
+            display: none;
         }
 
         /* Generic Section Styling */
@@ -565,6 +566,8 @@ section:not(#landing-hero){scroll-margin-top:80px;}
 
         // --- INITIALIZATION FUNCTION ---
         async function initializeSite() {
+            if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+            window.scrollTo(0, 0);
             // Dynamically import heavy libraries
             [
                 { name: 'Anime', path: ANIME_PATH, isDefault: true },
