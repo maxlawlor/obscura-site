@@ -616,6 +616,12 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             });
+
+            // Hide hero geometry once the user scrolls past 60vh
+            window.addEventListener('scroll', () => {
+                const opacity = Math.max(0, 1 - window.scrollY / (window.innerHeight * 0.6));
+                canvas.style.opacity = opacity;
+            });
         }
 
         // --- SACRED-NETWORK NAV OVERLAY ---
@@ -753,6 +759,10 @@
                 { threshold: 0.1 }
             );
 
+            // Pagination state
+            const PAGE_SIZE = 9;
+            let currentPage = 0;
+
             // Fetch portfolio data and build the grid
             fetch('/content/portfolio.json')
                 .then(r => r.json())
@@ -760,34 +770,56 @@
                     // sort by Rank if present
                     list.sort((a, b) => (a.Rank || 0) - (b.Rank || 0));
 
-                    list.forEach(entry => {
-                        const id    = entry.VideoID || entry.id || entry.videoId;
-                        const title = entry.Title    || entry.title || '';
+                    function renderPage() {
+                        const start = currentPage * PAGE_SIZE;
+                        const end   = start + PAGE_SIZE;
+                        const slice = list.slice(start, end);
 
-                        if (!id) return; // skip malformed rows
+                        slice.forEach(entry => {
+                            const id    = entry.VideoID || entry.id || entry.videoId;
+                            const title = entry.Title    || entry.title || '';
+                            if (!id) return;
 
-                        const item = document.createElement('div');
-                        item.className = 'portfolio-item';
-                        item.dataset.videoId = id;                // unified attribute
-                        item.setAttribute('aria-label', title);
+                            const item = document.createElement('div');
+                            item.className = 'portfolio-item';
+                            item.dataset.videoId = id;
+                            item.setAttribute('aria-label', title);
 
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'placeholder';
-                        placeholder.setAttribute('role', 'button');
-                        placeholder.setAttribute('tabindex', '0');
-                        placeholder.setAttribute('aria-label', `Load video ${title}`);
+                            const placeholder = document.createElement('div');
+                            placeholder.className = 'placeholder';
+                            placeholder.setAttribute('role', 'button');
+                            placeholder.setAttribute('tabindex', '0');
+                            placeholder.setAttribute('aria-label', `Load video ${title}`);
 
-                        item.appendChild(placeholder);
-                        portfolioGrid.appendChild(item);
+                            item.appendChild(placeholder);
+                            portfolioGrid.appendChild(item);
 
-                        // observe & add click/keyboard handlers now
-                        observer.observe(item);
+                            // Spotlight first video (auto‑loads top‑left)
+                            if (currentPage === 0 && start === 0) loadYouTubeVideo(item);
 
-                        placeholder.addEventListener('click',   () => loadYouTubeVideo(item));
-                        placeholder.addEventListener('keypress',e => {
-                            if (e.key === 'Enter' || e.key === ' ') loadYouTubeVideo(item);
+                            observer.observe(item);
+                            placeholder.addEventListener('click',   () => loadYouTubeVideo(item));
+                            placeholder.addEventListener('keypress',e => {
+                                if (e.key === 'Enter' || e.key === ' ') loadYouTubeVideo(item);
+                            });
                         });
-                    });
+
+                        if ((currentPage + 1) * PAGE_SIZE < list.length) addLoadMoreButton();
+                    }
+
+                    function addLoadMoreButton() {
+                        const btn = document.createElement('button');
+                        btn.textContent = 'Load More';
+                        btn.style.cssText = 'grid-column: 1 / -1; margin: 1rem auto; padding: .75rem 1.5rem; background: var(--accent-color); color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold;';
+                        btn.addEventListener('click', () => {
+                            btn.remove();
+                            currentPage++;
+                            renderPage();
+                        });
+                        portfolioGrid.appendChild(btn);
+                    }
+
+                    renderPage();   // initial page
                 })
                 .catch(err => {
                     console.error('Failed to load portfolio.json', err);
@@ -802,7 +834,7 @@
 
                 item.innerHTML =
                     `<iframe width="560" height="315" loading="lazy"
-                             src="https://www.youtube-nocookie.com/embed/${id}?autoplay=0&mute=1&enablejsapi=1"
+                             src="https://www.youtube-nocookie.com/embed/${id}?autoplay=0&mute=1&enablejsapi=1&controls=0&modestbranding=1&rel=0&showinfo=0"
                              title="YouTube video player ${id}" frameborder="0"
                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                              allowfullscreen></iframe>`;
