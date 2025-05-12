@@ -402,9 +402,20 @@ section:not(#landing-hero){scroll-margin-top:80px;}
 </head>
 <body>
 
-    <div id="hero-container">
-        <canvas id="hero-canvas"></canvas>
-    </div>
+
+    <!-- Landing Hero -->
+    <section id="landing-hero">
+        <canvas id="sphere-canvas" aria-hidden="true"></canvas>
+
+        <div class="landing-inner">
+            <h1 class="logo">Obscura</h1>
+            <nav class="landing-nav">
+                <a href="#portfolio" class="landing-link">Editorial</a>
+                <a href="#lab" class="landing-link">Generative&nbsp;AI</a>
+                <a href="#contact-section" class="landing-link">Contact</a>
+            </nav>
+        </div>
+    </section>
 
     <nav id="hex-nav" aria-label="Main Navigation">
         <!-- These will be positioned by CSS. This example needs adjustment for a proper 6-hex cluster -->
@@ -619,7 +630,7 @@ section:not(#landing-hero){scroll-margin-top:80px;}
 
         // --- HERO CANVAS (THREE.JS) ---
         function initHeroCanvas() {
-            const canvas = document.getElementById('hero-canvas');
+            const canvas = document.getElementById('sphere-canvas');
             if (!canvas) return;
 
             const scene = new Three.Scene();
@@ -634,14 +645,10 @@ section:not(#landing-hero){scroll-margin-top:80px;}
 
             const group = new Three.Group();
             const sphere = new Three.Mesh(
-    new Three.SphereGeometry(2,32,32),
-    material
-);
-group.add(sphere);
-
-
-            group.add(dodeca);
-            group.add(icosa);
+                new Three.SphereGeometry(2,32,32),
+                material
+            );
+            group.add(sphere);
             scene.add(group);
 
             if (!prefersReducedMotion) {
@@ -662,7 +669,6 @@ group.add(sphere);
                     easing: 'easeInOutSine'
                 });
             }
-
 
             function animate() {
                 requestAnimationFrame(animate);
@@ -1171,17 +1177,4 @@ group.add(sphere);
         document.addEventListener('DOMContentLoaded', initializeSite);
     </script>
 </body>
-<!-- Landing Hero -->
-<section id="landing-hero">
-    <canvas id="sphere-canvas" aria-hidden="true"></canvas>
-
-    <div class="landing-inner">
-        <h1 class="logo">Obscura</h1>
-        <nav class="landing-nav">
-            <a href="#portfolio" class="landing-link">Editorial</a>
-            <a href="#lab" class="landing-link">Generative&nbsp;AI</a>
-            <a href="#contact-section" class="landing-link">Contact</a>
-        </nav>
-    </div>
-</section>
 </html>
