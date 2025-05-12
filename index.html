@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Obscura Life</title>
-    <!-- TODO: Replace xxxxxxxx with actual Adobe Fonts Kit ID -->
     <!-- Brand fonts -->
     <link rel="stylesheet" href="https://use.typekit.net/mvi5fnr.css">
     <style>
@@ -57,80 +56,6 @@
             font-family: var(--font-serif);
         }
 
-        /* Hero Canvas */
-        #hero-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1; /* Behind content */
-            pointer-events: none; /* Allows clicking through */
-        }
-        #hero-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        /* Sacred-Network Nav Overlay */
-        #hex-nav {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: grid;
-            grid-template-columns: repeat(3, 100px); /* Approximate for 6 hexes */
-            grid-template-rows: repeat(3, 86.6px); /* Height of a 100px wide hexagon */
-            gap: 10px;
-            z-index: 100;
-            width: 320px; /* (100 * 3) + (10 * 2) */
-            height: 270px; /* (86.6 * 3) + (10 * 2) -> approx */
-            pointer-events: none; /* Container itself should not block */
-        }
-
-        .hex-node {
-            width: 100px;
-            height: 86.6px; /* 100 * sqrt(3)/2 */
-            background-color: rgba(255, 255, 255, 0.1);
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            pointer-events: all; /* Nodes themselves are interactive */
-        }
-        .hex-node:hover {
-            background-color: rgba(253, 187, 50, 0.3);
-            transform: scale(1.1);
-        }
-        .hex-node .label {
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--card-bg-color);
-            color: var(--text-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-        .hex-node:hover .label {
-            opacity: 1;
-        }
-
-        /* Hexagon Grid Positions - Example Layout */
-        .hex-node:nth-child(1) { grid-column: 1 / 2; grid-row: 2 / 3; }
-        .hex-node:nth-child(2) { grid-column: 2 / 3; grid-row: 1 / 2; margin-left: -25px; } /* Offset for tight packing */
-        .hex-node:nth-child(3) { grid-column: 2 / 3; grid-row: 2 / 3; margin-left: 25px; margin-top:43.3px; } /* Center */
-        .hex-node:nth-child(4) { grid-column: 2 / 3; grid-row: 3 / 4; margin-left: -25px; }
-        .hex-node:nth-child(5) { grid-column: 3 / 4; grid-row: 2 / 3; }
-        .hex-node:nth-child(6) { grid-column: 2 / 3; grid-row: 2 / 3; margin-left: -75px; margin-top:-43.3px;} /* Example, needs refinement for actual 6 hex layout */
 
 
         /* "Now" Clock & CN-Tower Sundial Widget */
@@ -152,11 +77,6 @@
         }
         #clock-time {
             margin-bottom: 5px;
-        }
-        #sundial-canvas {
-            width: 100px;
-            height: 100px;
-            display: none;
         }
 
         /* Generic Section Styling */
@@ -363,8 +283,19 @@
         .col-6 { grid-column: span 6; }
         /* Add more col classes as needed for responsive designs if CSS Grid alone isn't sufficient for #portfolio-grid pattern */
 
-        /* --- TEMP: hide hex navigation overlay until redesign --- */
-        #hex-nav { display:none !important; }
+</style>
+        /* --- Landing Hero --- */
+#landing-hero{
+    position:relative;width:100%;height:100vh;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+}
+#sphere-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+.landing-inner{text-align:center;z-index:5;position:relative;}
+.landing-nav{margin-top:2rem;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;}
+.landing-link{color:var(--accent-color);font-family:var(--font-sans);font-weight:600;
+    text-decoration:none;font-size:1.25rem;transition:color .3s;}
+.landing-link:hover{color:#fff;}
+section:not(#landing-hero){scroll-margin-top:80px;}
 
         /* Lightbox */
         #lightbox {
@@ -388,20 +319,6 @@
             font-size:2rem; color:#fff; cursor:pointer; user-select:none;
         }
 </style>
-    <style>
-        /* --- Landing Hero --- */
-#landing-hero{
-    position:relative;width:100%;height:100vh;overflow:hidden;
-    display:flex;align-items:center;justify-content:center;
-}
-#sphere-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
-.landing-inner{text-align:center;z-index:5;position:relative;}
-.landing-nav{margin-top:2rem;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;}
-.landing-link{color:var(--accent-color);font-family:var(--font-sans);font-weight:600;
-    text-decoration:none;font-size:1.25rem;transition:color .3s;}
-.landing-link:hover{color:#fff;}
-section:not(#landing-hero){scroll-margin-top:80px;}
-    </style>
 </head>
 <body>
 
@@ -420,19 +337,9 @@ section:not(#landing-hero){scroll-margin-top:80px;}
         </div>
     </section>
 
-    <nav id="hex-nav" aria-label="Main Navigation">
-        <!-- These will be positioned by CSS. This example needs adjustment for a proper 6-hex cluster -->
-        <div class="hex-node" data-target="#portfolio" role="button" tabindex="0" aria-label="Portfolio"><span class="label">Portfolio</span></div>
-        <div class="hex-node" data-target="#lab" role="button" tabindex="0" aria-label="AI Lab"><span class="label">AI Lab</span></div>
-        <div class="hex-node" data-target="#radio" role="button" tabindex="0" aria-label="Radio"><span class="label">rAIdio</span></div>
-        <div class="hex-node" data-target="#about" role="button" tabindex="0" aria-label="About Us"><span class="label">About</span></div>
-        <div class="hex-node" data-target="#contact-section" role="button" tabindex="0" aria-label="Contact"><span class="label">Contact</span></div>
-        <div class="hex-node" data-target="#now-clock-section" role="button" tabindex="0" aria-label="Current Time"><span class="label">Now</span></div>
-    </nav>
 
     <div id="clock-widget">
         <div id="clock-time">Loading...</div>
-        <canvas id="sundial-canvas"></canvas>
     </div>
     
     <main>
@@ -544,12 +451,11 @@ section:not(#landing-hero){scroll-margin-top:80px;}
         const USDZLOADER_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/USDZLoader.js';
         const ORBITCONTROLS_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
         const ANIME_PATH = 'https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.es.js';
-        const MATTER_PATH = 'https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js'; // Matter.js is not an ES module by default from CDNs like jsdelivr usually, check for .esm.js or wrap if needed. Using .min.js and assuming it adds to window.Matter
         const DAYJS_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js';
         const DAYJS_TZ_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/timezone.js';
         const DAYJS_UTC_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/utc.js';
 
-        let Three, Anime, Matter, Dayjs; // Modules to be loaded
+        let Three, Anime, Dayjs; // Modules to be loaded
 
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -610,26 +516,17 @@ section:not(#landing-hero){scroll-margin-top:80px;}
             initRadio();
             initFooterEasterEgg();
 
-            // Defer Three.js and Matter.js loading further if possible, or load them now for components that need them.
+            // Defer Three.js loading further if possible, or load it now for components that need them.
             // For Hero canvas, Three.js is critical path, so load it earlier or show a loader.
             // For Lab section, it can be loaded on demand (e.g., when section is visible or interacted with)
 
-            // For simplicity here, we'll load them sequentially but mark them for potential on-demand loading.
+            // For simplicity here, we'll load it sequentially but mark for potential on-demand loading.
             // THREE.JS related inits (Hero, Lab)
             const threeModule = await import(THREE_PATH);
             Three = threeModule; // Three should contain Scene, PerspectiveCamera etc.
 
             if (document.getElementById('hero-canvas')) initHeroCanvas();
             if (document.getElementById('lab')) initAILab();
-            
-            // MATTER.JS related inits (Nav - though its use is minimal as per spec interpretation)
-            // Matter.js standard minified usually exposes a global `Matter`
-            await import(MATTER_PATH);
-            if (window.Matter) {
-                Matter = window.Matter;
-                // Minimal use for nav hex nodes, mostly fulfilling requirement
-                if(document.getElementById('hex-nav')) initMatterForNav();
-            }
         }
 
 
@@ -701,118 +598,24 @@ section:not(#landing-hero){scroll-margin-top:80px;}
 
         // --- SACRED-NETWORK NAV OVERLAY ---
         function initNav() {
-            const navNodes = document.querySelectorAll('#hex-nav .hex-node');
-            navNodes.forEach(node => {
-                node.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const targetId = node.dataset.target;
-                    
-                    Anime({ // Flash effect
-                        targets: node,
-                        backgroundColor: [
-                            {value: 'rgba(253, 187, 50, 0.7)', duration: 150},
-                            {value: node.style.backgroundColor || 'rgba(255, 255, 255, 0.1)', duration: 300}
-                        ],
-                        easing: 'linear'
-                    });
-                    smoothScrollTo(targetId);
-                });
-                // Handle focus for keyboard navigation
-                node.addEventListener('keypress', (e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    node.click();
-                  }
-                });
-
-                // Label visibility managed by CSS :hover for simplicity and performance
-            });
-        }
-        
-        function initMatterForNav() {
-            if (!Matter || !document.querySelector('#hex-nav')) return;
-            // Minimalistic Matter.js integration for hex nodes as per spec
-            // The hex nodes are primarily CSS positioned and HTML elements.
-            // Matter.js bodies could be used for future enhancements or if "draggable nodes" were intended for them.
-            // Here, we create static sensor bodies merely to "use" Matter.js as requested.
-            const { Engine, Render, Runner, World, Bodies } = Matter;
-            const engine = Engine.create({ gravity: {x:0, y:0} }); // No gravity
-            const navContainer = document.getElementById('hex-nav');
-            const nodes = navContainer.querySelectorAll('.hex-node');
-
-            nodes.forEach((nodeEl, index) => {
-                const rect = nodeEl.getBoundingClientRect(); // Get dimensions from HTML element
-                const body = Bodies.rectangle(
-                    rect.left + rect.width / 2 - navContainer.getBoundingClientRect().left, // Position relative to nav container
-                    rect.top + rect.height / 2 - navContainer.getBoundingClientRect().top,
-                    rect.width,
-                    rect.height,
-                    { 
-                        isStatic: true, // Invisible, non-colliding, non-moving
-                        isSensor: true,
-                        label: `nav-node-${index}`
-                    }
-                );
-                World.add(engine.world, [body]);
-            });
-            console.log("Matter.js engine created for nav with static sensor bodies.", engine.world.bodies);
-            // No renderer or runner needed as bodies are invisible and non-interactive physically.
+            // Navigation overlay removed; nothing to initialize.
         }
 
 
         // --- "NOW" CLOCK & CN-TOWER SUNDIAL WIDGET ---
         function initClockWidget() {
             const timeEl = document.getElementById('clock-time');
-            const sundialCanvas = document.getElementById('sundial-canvas');
             const tz = 'America/Toronto';
 
-            if (!timeEl || !sundialCanvas || !Dayjs) return;
-
-            const sundialCtx = sundialCanvas.getContext('2d');
+            if (!timeEl || !Dayjs) return;
 
             function updateClock() {
                 const now = Dayjs().tz(tz);
                 timeEl.textContent = now.format('HH:mm:ss');
-                drawSundial(now);
-                requestAnimationFrame(updateClock); // More fine-grained updates for seconds
+                requestAnimationFrame(updateClock);
             }
-            
-            function drawSundial(now) {
-                sundialCtx.clearRect(0, 0, sundialCanvas.width, sundialCanvas.height);
-                
-                const centerX = sundialCanvas.width / 2;
-                const centerY = sundialCanvas.height / 2;
-                const towerHeight = sundialCanvas.height * 0.6;
-                const rayLength = sundialCanvas.width * 0.45;
 
-                // Draw simple CN Tower representation (a line)
-                sundialCtx.strokeStyle = varComputedStyle.getPropertyValue('--accent-color').trim() || '#FDBB32';
-                sundialCtx.lineWidth = 3;
-                sundialCtx.beginPath();
-                sundialCtx.moveTo(centerX, centerY - towerHeight / 2);
-                sundialCtx.lineTo(centerX, centerY + towerHeight / 2);
-                sundialCtx.stroke();
-
-                // Calculate ray angle
-                // Simple simulation: 6 AM (sunrise) = right, 6 PM (sunset) = left. Noon = straight down.
-                // This is highly simplified.
-                const hours = now.hour() + now.minute() / 60;
-                let angle;
-                if (hours >= 6 && hours <= 18) { // Daylight hours
-                    // Map 6-18 hours to 0-PI radians (right to left)
-                    angle = ((hours - 6) / 12) * Math.PI;
-                } else { // Night - no shadow or very long shadow, make it subtle or absent
-                    angle = Math.PI / 2; // Default to pointing down if not daylight for this crude model
-                     sundialCtx.strokeStyle = 'rgba(253, 187, 50, 0.3)'; // Dimmer shadow at night
-                }
-
-                sundialCtx.beginPath();
-                sundialCtx.moveTo(centerX, centerY); // Gnomon projects from center of tower base in this model
-                sundialCtx.lineTo(centerX + rayLength * Math.cos(angle), centerY + rayLength * Math.sin(angle));
-                sundialCtx.stroke();
-            }
-            
-            const varComputedStyle = getComputedStyle(document.documentElement); // To get CSS var values
-            updateClock(); // Initial call
+            updateClock();
         }
 
 
