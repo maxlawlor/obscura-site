@@ -738,79 +738,74 @@
         // --- PORTFOLIO SECTION ---
         function initPortfolio() {
             const portfolioGrid = document.getElementById('portfolio-grid');
-            // Load video list from JSON and build the grid
+            if (!portfolioGrid) return;
+
+            // Intersection Observer – create once, use for each card
+            const observer = new IntersectionObserver(
+                (entries, obs) => {
+                    entries.forEach(entry => {
+                        if (!entry.isIntersecting) return;
+                        const item = entry.target;
+                        loadYouTubeVideo(item);
+                        obs.unobserve(item);           // load once per card
+                    });
+                },
+                { threshold: 0.1 }
+            );
+
+            // Fetch portfolio data and build the grid
             fetch('/content/portfolio.json')
                 .then(r => r.json())
                 .then(list => {
-                    // Sort by Rank (numeric) if present
+                    // sort by Rank if present
                     list.sort((a, b) => (a.Rank || 0) - (b.Rank || 0));
 
                     list.forEach(entry => {
-                        const id   = entry.VideoID || entry.id || entry.videoId;
-                        const title = entry.Title || entry.title || '';
+                        const id    = entry.VideoID || entry.id || entry.videoId;
+                        const title = entry.Title    || entry.title || '';
 
                         if (!id) return; // skip malformed rows
 
                         const item = document.createElement('div');
                         item.className = 'portfolio-item';
-                        item.dataset.youtubeId = id;
+                        item.dataset.videoId = id;                // unified attribute
                         item.setAttribute('aria-label', title);
 
                         const placeholder = document.createElement('div');
                         placeholder.className = 'placeholder';
                         placeholder.setAttribute('role', 'button');
+                        placeholder.setAttribute('tabindex', '0');
                         placeholder.setAttribute('aria-label', `Load video ${title}`);
-                        placeholder.tabIndex = 0;
 
                         item.appendChild(placeholder);
                         portfolioGrid.appendChild(item);
+
+                        // observe & add click/keyboard handlers now
+                        observer.observe(item);
+
+                        placeholder.addEventListener('click',   () => loadYouTubeVideo(item));
+                        placeholder.addEventListener('keypress',e => {
+                            if (e.key === 'Enter' || e.key === ' ') loadYouTubeVideo(item);
+                        });
                     });
                 })
                 .catch(err => {
                     console.error('Failed to load portfolio.json', err);
                 });
 
-            const observer = new IntersectionObserver((entries, obs) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const item = entry.target;
-                        loadYouTubeVideo(item);
-                        obs.unobserve(item); // Load once
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            document.querySelectorAll('.portfolio-item').forEach(item => {
-                observer.observe(item);
-                item.querySelector('.placeholder').addEventListener('click', () => loadYouTubeVideo(item));
-                item.querySelector('.placeholder').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') loadYouTubeVideo(item);
-                });
-            });
-
+            // helper to swap placeholder with iframe
             function loadYouTubeVideo(item) {
-                if (item.querySelector('iframe')) return; // Already loaded
+                if (item.querySelector('iframe')) return; // already loaded
 
-                const videoId = item.dataset.youtubeId;
-                item.innerHTML = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}?autoplay=0&mute=1&enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="YouTube video player ${videoId}"></iframe>`;
-                
-                const iframe = item.querySelector('iframe');
-                if (!iframe) return;
+                const id = item.dataset.videoId;
+                if (!id) return;
 
-                item.addEventListener('mouseenter', () => {
-                    if (!prefersReducedMotion) {
-                        Anime({ targets: item, scale: 1.05, duration: 300, easing: 'easeOutSine' });
-                    }
-                    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-                    iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-                });
-                item.addEventListener('mouseleave', () => {
-                     if (!prefersReducedMotion) {
-                        Anime({ targets: item, scale: 1.0, duration: 300, easing: 'easeOutSine' });
-                    }
-                    // Optional: Pause video on mouse leave
-                    // iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                });
+                item.innerHTML =
+                    `<iframe width="560" height="315" loading="lazy"
+                             src="https://www.youtube-nocookie.com/embed/${id}?autoplay=0&mute=1&enablejsapi=1"
+                             title="YouTube video player ${id}" frameborder="0"
+                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                             allowfullscreen></iframe>`;
             }
         }
 
