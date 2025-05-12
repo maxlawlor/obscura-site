@@ -185,13 +185,20 @@
         }
         .portfolio-item .placeholder {
             width:100%; height:100%;
-            background-color: #333;
+            background-color:#000;
+            background-size:cover;
+            background-position:center;
             display:flex; align-items:center; justify-content:center;
-            cursor: pointer;
+            cursor:pointer;
+            transition:filter .3s ease;
         }
+        .portfolio-item .placeholder:hover { filter:brightness(1.2); }
         .portfolio-item .placeholder::after {
-            content: 'Load Video';
-            color: var(--accent-color);
+            content:'▶';
+            font-size:3rem;
+            color:var(--accent-color);
+            text-shadow:0 0 6px rgba(0,0,0,.6);
+            pointer-events:none;
         }
 
         /* Generative AI Lab */
@@ -803,11 +810,13 @@
                             item.dataset.videoId = id;
                             item.setAttribute('aria-label', title);
 
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'placeholder';
-                            placeholder.setAttribute('role', 'button');
-                            placeholder.setAttribute('tabindex', '0');
-                            placeholder.setAttribute('aria-label', `Load video ${title}`);
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'placeholder';
+                        // Set YouTube thumbnail as background
+                        placeholder.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`;
+                        placeholder.setAttribute('role', 'button');
+                        placeholder.setAttribute('tabindex', '0');
+                        placeholder.setAttribute('aria-label', `Load video ${title}`);
 
                             item.appendChild(placeholder);
                             portfolioGrid.appendChild(item);
