@@ -476,6 +476,7 @@
         const THREE_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
         const GLTFLOADER_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/GLTFLoader.js';
         const USDZLOADER_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/USDZLoader.js';
+        const DRACOLOADER_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/DRACOLoader.js';
         const ORBITCONTROLS_PATH = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js';
         const ANIME_PATH = 'https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.es.js';
         const DAYJS_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js';
@@ -762,7 +763,7 @@
         }
 
         // --- GENERATIVE AI LAB ---
-        let labScene, labCamera, labRenderer, labControls, GLTFLoader, USDZLoader, OrbitControls;
+        let labScene, labCamera, labRenderer, labControls, GLTFLoader, USDZLoader, OrbitControls, DRACOLoader, dracoLoader;
         
         async function initAILab() {
             const dropzone = document.getElementById('dropzone');
@@ -775,11 +776,14 @@
             }
             const gltfLoaderModule = await import(GLTFLOADER_PATH);
             GLTFLoader = gltfLoaderModule.GLTFLoader;
-            const usdzLoaderModule = await import(USDZLOADER_PATH); // USDZLoader.js doesn't export default sometimes
-            USDZLoader = usdzLoaderModule.USDZLoader; // Adjust if it exports differently
+            const usdzLoaderModule = await import(USDZLOADER_PATH);
+            USDZLoader = usdzLoaderModule.USDZLoader;
+            const dracoLoaderModule = await import(DRACOLOADER_PATH);
+            DRACOLoader = dracoLoaderModule.DRACOLoader;
+            dracoLoader = new DRACOLoader();
+            dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/libs/draco/');
             const orbitControlsModule = await import(ORBITCONTROLS_PATH);
             OrbitControls = orbitControlsModule.OrbitControls;
-
 
             labScene = new Three.Scene();
             labScene.background = new Three.Color(0x222222); // Match container background
@@ -833,6 +837,7 @@
             document.querySelectorAll('.demo-model-buttons button').forEach(button => {
                 button.addEventListener('click', () => {
                     const modelSrc = button.dataset.modelSrc;
+                    console.info('Loading demo model:', modelSrc);
                     loadModelFromURL(modelSrc);
                 });
             });
@@ -860,6 +865,7 @@
             reader.onload = (event) => {
                 if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
                     const loader = new GLTFLoader();
+                    loader.setDRACOLoader(dracoLoader);
                     loader.parse(event.target.result, '', (gltf) => {
                         currentLoadedModel = gltf.scene;
                         centerAndScaleModel(currentLoadedModel);
@@ -881,47 +887,54 @@
         
         function loadModelFromURL(url, isObjectURL = false) {
             clearLabScene();
-            const fileName = url.toLowerCase();
+
+            const fileName = url.split('?')[0].toLowerCase();
             let loader;
+
+            // Allow cross‑origin for GLB hosted on CDN / Replit
+            Three.DefaultLoadingManager.setURLModifier( (url, path) => {
+              if (!url.startsWith('blob:')) return url + (url.indexOf('?') === -1 ? '?' : '&') + 'cors=1';
+              return url;
+            });
 
             if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
                 loader = new GLTFLoader();
+                loader.setDRACOLoader(dracoLoader);
             } else if (fileName.endsWith('.usdz')) {
-                // USDZLoader expects path to Basis transcoder worker scripts in its constructor
-                // Setting path relative to the module. For CDN, this needs verification.
                 const basisPath = 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/libs/basis/';
                 loader = new USDZLoader().setPath(basisPath);
             } else {
                 alert('Unsupported file type from URL.');
                 return;
             }
-            
+
             loader.load(url, (model) => {
-                currentLoadedModel = model.scene || model; // USDZLoader returns the object directly
+                currentLoadedModel = model.scene || model;
                 centerAndScaleModel(currentLoadedModel);
                 labScene.add(currentLoadedModel);
-                if (isObjectURL) URL.revokeObjectURL(url); // Clean up blob URL
+                if (isObjectURL) URL.revokeObjectURL(url);
             }, undefined, (error) => {
                 console.error('Error loading model:', error);
-                alert('Failed to load model.');
+                alert('Could not load model – check console for details.');
                 if (isObjectURL) URL.revokeObjectURL(url);
             });
         }
 
         function centerAndScaleModel(object) {
-            const box = new Three.Box3().setFromObject(object);
-            const size = box.getSize(new Three.Vector3());
-            const center = box.getCenter(new Three.Vector3());
+            // Compute tight bounding box of all meshes
+            const box   = new Three.Box3().setFromObject(object);
+            const size  = box.getSize(new Three.Vector3());
+            const center= box.getCenter(new Three.Vector3());
 
-            object.position.x += (object.position.x - center.x);
-            object.position.y += (object.position.y - center.y);
-            object.position.z += (object.position.z - center.z);
+            // Re‑center
+            object.position.sub(center);
 
+            // Scale to fit a 2‑unit cube; if extremely small, boost by 10×
             const maxDim = Math.max(size.x, size.y, size.z);
-            const scale = 2.0 / maxDim; // Fit into a 2-unit box roughly
-            object.scale.set(scale, scale, scale);
-            
-            labControls.target.copy(center.multiplyScalar(scale)); // Not perfect but ok
+            const scale  = maxDim > 0.0001 ? 2 / maxDim : 20;
+            object.scale.setScalar(scale);
+
+            labControls.target.set(0,0,0);
             labControls.update();
         }
 
