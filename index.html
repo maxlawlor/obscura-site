@@ -396,8 +396,7 @@
                     <p>Drag & Drop USDZ/GLB files here</p>
                     <p>or load a demo:</p>
                     <div class="demo-model-buttons">
-                        <!-- TODO: Update with actual paths -->
-                        <button data-model-src="/3d/fifel.glb">Fifel (GLB)</button>
+                        <button data-model-src="/3d/sherman.glb">Sherman (GLB)</button>
                         <button data-model-src="/3d/cn-tower.glb">CN Tower (GLB)</button>
                         <button data-model-src="/3d/sacred-spiral.usdz">Sacred Spiral (USDZ)</button>
                     </div>
@@ -936,12 +935,10 @@
 
             // <!-- TODO: MP3 URL arrays (AM / FM) -->
             const amTracks = [
-                { title: "Analog Dreams", url: "placeholder-am-track1.mp3" },
-                { title: "Vintage Waves", url: "placeholder-am-track2.mp3" },
+                { title: "AM 01", url: "/audio/am/am01.mp3" },
             ];
             const fmTracks = [
-                { title: "Digital Echoes", url: "placeholder-fm-track1.mp3" },
-                { title: "Frequency Shift", url: "placeholder-fm-track2.mp3" },
+                { title: "FM 01", url: "/audio/fm/fm01.mp3" },
             ];
             let currentPlaylist = amTracks;
             let currentTrackIndex = 0;
