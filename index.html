@@ -28,14 +28,14 @@
         :root {
             --accent-color: #0455BF;      /* blue */
             --background-color: #FFCB00;  /* yellow */
-            --text-color: #FAFAFA;        /* off‑white */
+            --text-color: #1A1A1A;        /* off‑white */
             --card-bg-color: #FAFAFA;     /* white for panels */
             --border-radius-xl: 1rem;
             --soft-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08),
                            0 4px 6px -2px rgba(0, 0, 0, 0.04);
             --spectral-gradient: linear-gradient(90deg,
                 hsl(210, 80%, 55%), hsl(220, 80%, 55%), hsl(230, 80%, 55%)); /* cleaned to a blue gradient */
-            --font-sans: "Lexend Peta", system-ui, sans-serif;
+            --font-sans: "Red Hat Display", system-ui, sans-serif;
             --font-serif: "Red Hat Display", Georgia, serif;
         }
 
@@ -83,26 +83,7 @@
 
 
 
-        /* "Now" Clock & CN-Tower Sundial Widget */
-        #clock-widget {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background-color: rgba(11, 11, 11, 0.7);
-            backdrop-filter: blur(5px);
-            padding: 10px;
-            border-radius: var(--border-radius-xl);
-            box-shadow: var(--soft-shadow);
-            z-index: 100;
-            color: var(--text-color);
-            font-size: 1.2em;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #clock-time {
-            margin-bottom: 5px;
-        }
+
 
         /* Generic Section Styling */
         .section-content {
@@ -145,7 +126,7 @@
         .portfolio-item .placeholder::after {
             content:'▶';
             font-size:3rem;
-            color:var(--accent-color);
+            color:#FFCB00;
             text-shadow:0 0 6px rgba(0,0,0,.6);
             pointer-events:none;
         }
@@ -360,8 +341,7 @@
         <div class="landing-inner">
             <img src="/logo/Obscura-logo.svg"
                  alt="Obscura Creative"
-                 class="logo"
-                 style="max-width:240px; height:auto;" />
+                 class="logo" />
             <nav class="landing-nav">
                 <a href="#portfolio" class="landing-link">Editorial</a>
                 <a href="#lab" class="landing-link">Generative&nbsp;AI</a>
@@ -370,10 +350,7 @@
         </div>
     </section>
 
-
-    <div id="clock-widget">
-        <div id="clock-time">Loading...</div>
-    </div>
+    
     
     <main>
         <div id="now-clock-section"></div> <!-- Dummy anchor for "Now" hex nav item -->
@@ -456,11 +433,16 @@
 
                 <h3>Tools We Love</h3>
                 <div class="tool-badges">
-                    <span>Runway</span>
+                    <span>ChatGPT</span>
+                    <span>ElevenLabs</span>
+                    <span>RunwayML</span>
                     <span>Pika</span>
-                    <span>Suno</span>
+                    <span>Premiere</span>
+                    <span>Photoshop</span>
+                    <span>Illustrator</span>
+                    <span>After Effects</span>
                     <span>Blender</span>
-                    <!-- Could be img tags: <img src="path/to/runway-logo.svg" alt="RunwayML"> -->
+                    <span>Suno</span>
                 </div>
             </div>
         </section>
@@ -543,7 +525,6 @@
                 }, 50);
             });
             
-            initClockWidget();
             initNav();
             initPortfolio();
             initRadio();
@@ -637,22 +618,8 @@
             // Navigation overlay removed; nothing to initialize.
         }
 
-
         // --- "NOW" CLOCK & CN-TOWER SUNDIAL WIDGET ---
-        function initClockWidget() {
-            const timeEl = document.getElementById('clock-time');
-            const tz = 'America/Toronto';
-
-            if (!timeEl || !Dayjs) return;
-
-            function updateClock() {
-                const now = Dayjs().tz(tz);
-                timeEl.textContent = now.format('HH:mm:ss');
-                requestAnimationFrame(updateClock);
-            }
-
-            updateClock();
-        }
+        // (Removed)
 
 
         // --- PORTFOLIO SECTION ---
