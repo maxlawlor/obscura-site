@@ -177,60 +177,22 @@
              color: white;
         }
 
-        /* Obscura rAIdio */
-        #radio-controls {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background-color: rgba(11, 11, 11, 0.7);
-            backdrop-filter: blur(5px);
-            padding: 15px;
-            border-radius: var(--border-radius-xl);
-            box-shadow: var(--soft-shadow);
-            z-index: 100;
-            min-width: 250px;
-        }
-        #radio-controls audio { width: 100%; margin-bottom: 10px; }
-        .track-info { font-size: 0.9em; margin-bottom: 10px; }
-        .playlist-toggle { display: flex; align-items: center; justify-content: space-around; margin-top: 10px; }
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 60px;
-          height: 34px;
-        }
-        .switch input {display:none;}
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
-          border-radius: 34px;
-        }
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 26px;
-          width: 26px;
-          left: 4px;
-          bottom: 4px;
-          background-color: white;
-          transition: .4s;
-          border-radius: 50%;
-        }
-        input:checked + .slider {
-          background-color: var(--accent-color);
-        }
-        input:focus + .slider {
-          box-shadow: 0 0 1px var(--accent-color);
-        }
-        input:checked + .slider:before {
-          transform: translateX(26px);
-        }
+
+        /* Inline radio block */
+#radio-block{
+    margin-top:2rem;
+    background:var(--card-bg-color);
+    padding:1.5rem;
+    border-radius:var(--border-radius-xl);
+    box-shadow:var(--soft-shadow);
+}
+#radio-block .track-info{
+    font-size:0.9rem;
+    opacity:0.8;
+}
+#radio-audio{
+    display:none; /* Hidden controls for true radio feel */
+}
 
 
         /* About / Contact */
@@ -387,30 +349,19 @@
                     <canvas id="model-viewer-canvas"></canvas>
                     <!-- OrbitControls will attach here -->
                 </div>
+                <!-- Obscura rAIdio (now inline) -->
+<div id="radio-block">
+    <h3>Obscura rAIdio</h3>
+    <p class="radio-description">
+        Sounds for the liminal space. This is a true radio stream—you can’t skip, pause, or rewind; just drop in and vibe.
+    </p>
+    <p class="track-info">
+        Now playing: <span id="radio-current-track">Loading…</span>
+    </p>
+    <audio id="radio-audio" preload="metadata"></audio>
+</div>
             </div>
         </section>
-
-        <section id="radio" class="container">
-             <div class="section-content">
-                <h2>Obscura rAIdio</h2>
-                <p>Sounds for the liminal space. AM for analog warmth, FM for digital frequencies.</p>
-                <!-- Player itself is fixed bottom-left in #radio-controls -->
-            </div>
-        </section>
-        <div id="radio-controls">
-            <audio id="audio-player" controls></audio>
-            <div class="track-info">
-                <span id="current-track-title">--</span> | <span id="current-track-time">--:-- / --:--</span>
-            </div>
-            <div class="playlist-toggle">
-                <span>AM</span>
-                <label class="switch">
-                    <input type="checkbox" id="playlist-switch">
-                    <span class="slider round"></span>
-                </label>
-                <span>FM</span>
-            </div>
-        </div>
 
 
         <section id="about" class="container">
@@ -714,9 +665,9 @@
             if (!lightbox) return;
             lightboxInner.innerHTML =
                 `<iframe loading="lazy"
-                         src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=0&controls=0&modestbranding=1&rel=0&showinfo=0"
+                         src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&mute=0&vq=hd720&rel=0&modestbranding=1&showinfo=0"
                          title="${title || 'Obscura video'}"
-                         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                         allow="autoplay; accelerometer; encrypted-media; gyroscope; picture-in-picture"
                          allowfullscreen></iframe>`;
             lightbox.classList.add('visible');
             lightbox.setAttribute('aria-hidden','false');
@@ -912,88 +863,31 @@
 
         // --- OBSCURA rAIDIO ---
         function initRadio() {
-            const audioPlayer = document.getElementById('audio-player');
-            const playlistSwitch = document.getElementById('playlist-switch');
-            const currentTrackTitleEl = document.getElementById('current-track-title');
-            const currentTrackTimeEl = document.getElementById('current-track-time');
-            if(!audioPlayer || !playlistSwitch || !currentTrackTitleEl || !currentTrackTimeEl) return;
+    const audioPlayer = document.getElementById('radio-audio');
+    const currentTrackTitleEl = document.getElementById('radio-current-track');
+    if(!audioPlayer || !currentTrackTitleEl) return;
 
-            // <!-- TODO: MP3 URL arrays (AM / FM) -->
-            const amTracks = [
-                { title: "AM 01", url: "/audio/am/am01.mp3" },
-            ];
-            const fmTracks = [
-                { title: "FM 01", url: "/audio/fm/fm01.mp3" },
-            ];
-            let currentPlaylist = amTracks;
-            let currentTrackIndex = 0;
-            let isFading = false;
+    const lineup = [
+        { title: "Drift 01", url: "/audio/fm/fm01.mp3" },
+        { title: "Drift 02", url: "/audio/fm/fm02.mp3" },
+        { title: "Drift 03", url: "/audio/fm/fm03.mp3" }
+    ];
+    let index = Math.floor(Math.random()*lineup.length); // Drop‑in randomness
 
-            function loadTrack(index) {
-                if (index < 0 || index >= currentPlaylist.length) index = 0; // Loop playlist
-                currentTrackIndex = index;
-                const track = currentPlaylist[currentTrackIndex];
-                audioPlayer.src = track.url;
-                currentTrackTitleEl.textContent = track.title;
-                // Play is usually handled by user clicking play or auto-advance
-            }
+    function loadTrack(i){
+        index = i % lineup.length;
+        const track = lineup[index];
+        audioPlayer.src = track.url;
+        currentTrackTitleEl.textContent = track.title;
+    }
 
-            function playNextTrack() {
-                loadTrack((currentTrackIndex + 1) % currentPlaylist.length);
-                audioPlayer.play();
-            }
+    audioPlayer.addEventListener('ended', ()=>{ loadTrack(++index); audioPlayer.play(); });
 
-            function crossfadeToPlaylist(newPlaylist) {
-                if (isFading) return;
-                isFading = true;
-                
-                Anime({ // Fade out
-                    targets: audioPlayer,
-                    volume: [audioPlayer.volume, 0],
-                    duration: 500,
-                    easing: 'linear',
-                    complete: () => {
-                        audioPlayer.pause();
-                        currentPlaylist = newPlaylist;
-                        loadTrack(0); // Start new playlist from first track
-                        // Optional: set volume based on some preference or restore previous volume
-                        Anime({ // Fade in
-                            targets: audioPlayer,
-                            volume: [0, 1], // Assuming max volume 1
-                            duration: 500,
-                            easing: 'linear',
-                            begin: () => { if(audioPlayer.readyState >=2) audioPlayer.play(); }, // Play if ready
-                            complete: () => { isFading = false; }
-                        });
-                    }
-                });
-            }
-            
-            playlistSwitch.addEventListener('change', () => {
-                crossfadeToPlaylist(playlistSwitch.checked ? fmTracks : amTracks);
-            });
+    // Start immediately once metadata ready (auto‑play often needs user gesture, but Lab interaction counts)
+    audioPlayer.addEventListener('canplay', ()=> audioPlayer.play());
 
-            audioPlayer.addEventListener('ended', playNextTrack);
-            audioPlayer.addEventListener('loadedmetadata', updateTrackTime);
-            audioPlayer.addEventListener('timeupdate', updateTrackTime);
-
-            function formatTime(seconds) {
-                const min = Math.floor(seconds / 60);
-                const sec = Math.floor(seconds % 60);
-                return `${min}:${sec < 10 ? '0' : ''}${sec}`;
-            }
-
-            function updateTrackTime() {
-                if (audioPlayer.duration) {
-                    currentTrackTimeEl.textContent = `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration)}`;
-                } else {
-                    currentTrackTimeEl.textContent = `${formatTime(audioPlayer.currentTime)} / --:--`;
-                }
-            }
-            
-            // Initial load
-            loadTrack(0); 
-        }
+    loadTrack(index);
+}
 
         // --- FOOTER EASTER EGG ---
         function initFooterEasterEgg() {
