@@ -821,8 +821,8 @@ section {
                 }
             });
 
-            // Auto‑load Sherman model on init
-            loadModelFromURL('/3d/sherman.glb');
+            // Auto‑load lighter USDZ version of Sherman on init
+            loadModelFromURL('/3d/Sherman.usdz');
 
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape' && currentLoadedModel) {
