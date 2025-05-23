@@ -293,15 +293,26 @@
         .col-6 { grid-column: span 6; }
         /* Add more col classes as needed for responsive designs if CSS Grid alone isn't sufficient for #portfolio-grid pattern */
         /* --- Landing Hero --- */
-#landing-hero{
+#
+landing-hero{
     position:relative;width:100%;height:100vh;overflow:hidden;
     display:flex;align-items:center;justify-content:center;
 }
 #sphere-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
-.landing-inner{text-align:center;z-index:5;position:relative;}
+.landing-inner{
+    text-align:center;
+    position:relative;
+    z-index:5;
+    opacity:0;
+    transform:translateY(20px);
+    animation:fadeInUp 1s ease-out .3s forwards;
+}
 .landing-nav{margin-top:2rem;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;}
 .landing-link{color:var(--accent-color);font-family:var(--font-sans);font-weight:600;
-    text-decoration:none;font-size:1.25rem;transition:color .3s;}
+    text-decoration:none;font-size:1.25rem;transition:color .3s;
+    opacity:0;
+    animation:fadeInUp .8s ease-out .9s forwards;
+}
 .landing-link:hover{color:#fff;}
         section:not(#landing-hero){scroll-margin-top:80px;}
 
@@ -333,6 +344,10 @@
 #lightbox-close{
     position:absolute; top:20px;  right:30px;
     font-size:2rem; color:#fff; cursor:pointer; user-select:none;
+}
+@keyframes fadeInUp{
+    from{opacity:0; transform:translateY(20px);}
+    to  {opacity:1; transform:translateY(0);}
 }
     </style>
 </head>
@@ -503,6 +518,10 @@
         // --- INITIALIZATION FUNCTION ---
         async function initializeSite() {
             if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+            // Clear any URL hash so the browser can't auto‑scroll to anchors on load
+            if (location.hash) {
+                history.replaceState(null, '', location.pathname + location.search);
+            }
             window.scrollTo(0, 0);
             // Dynamically import heavy libraries
             [
