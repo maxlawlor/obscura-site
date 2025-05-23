@@ -148,7 +148,7 @@ section {
         #model-viewer-container {
             width: 100%;
             height: 400px;
-            background-color: #222;
+            background-color: transparent;
             border-radius: var(--border-radius-xl);
             position: relative;
         }
@@ -394,12 +394,6 @@ section {
         <section id="lab" class="container">
             <div class="section-content">
                 <h2>Generative AI Lab</h2>
-                <div id="dropzone" class="demo-model-buttons" aria-label="Load demo 3D models">
-                    <button data-model-src="/3d/sherman.glb">Sherman (GLB)</button>
-                    <button data-model-src="/3d/Sherman.usdz">Sherman (USDZ)</button>
-                    <button data-model-src="/3d/cn-tower.glb">CN&nbsp;Tower&nbsp;(GLB)</button>
-                    <button data-model-src="/3d/sacred-spiral.usdz">Sacred&nbsp;Spiral&nbsp;(USDZ)</button>
-                </div>
                 <div id="model-viewer-container">
                     <canvas id="model-viewer-canvas"></canvas>
                     <!-- OrbitControls will attach here -->
@@ -776,9 +770,8 @@ section {
         let labScene, labCamera, labRenderer, labControls, GLTFLoader, USDZLoader, OrbitControls, DRACOLoader, dracoLoader;
         
         async function initAILab() {
-            const dropzone = document.getElementById('dropzone');
             const modelViewerCanvas = document.getElementById('model-viewer-canvas');
-            if (!dropzone || !modelViewerCanvas) return;
+            if (!modelViewerCanvas) return;
 
             // Dynamically import Three.js extras if not already loaded for Hero
             if (!Three) { 
@@ -828,15 +821,9 @@ section {
                 }
             });
 
+            // Auto‑load Sherman model on init
+            loadModelFromURL('/3d/sherman.glb');
 
-            document.querySelectorAll('.demo-model-buttons button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const modelSrc = button.dataset.modelSrc;
-                    console.info('Loading demo model:', modelSrc);
-                    loadModelFromURL(modelSrc);
-                });
-            });
-            
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape' && currentLoadedModel) {
                     clearLabScene();
