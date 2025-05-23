@@ -65,10 +65,10 @@
             padding: 2rem;
         }
         
-        section {
-            padding: 60px 0;
-            min-height: 80vh; /* Ensure sections are substantial for scrolling */
-        }
+section {
+    padding: 40px 0;
+    min-height: 80vh; /* Ensure sections are substantial for scrolling */
+}
 
         h1, h2, h3, .logo {
             color: var(--accent-color);
@@ -91,7 +91,7 @@
             padding: 2rem;
             border-radius: var(--border-radius-xl);
             box-shadow: var(--soft-shadow);
-            margin-top: 10vh; /* Push content down so hero is visible initially */
+            margin-top: 6vh; /* Push content down so hero is visible initially */
         }
 
         /* Portfolio Section */
@@ -164,7 +164,7 @@
         #model-viewer-canvas { display: block; width:100%; height:100%; }
         .demo-model-buttons button {
             background-color: var(--accent-color);
-            color: var(--background-color);
+            color: #fff;
             border: none;
             padding: 0.5rem 1rem;
             margin: 0.5rem;
@@ -304,7 +304,7 @@
     opacity:0;
     animation:fadeIn 1s ease-out .3s forwards;
 }
-.landing-nav{margin-top:2rem;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;}
+.landing-nav{margin-top:1rem;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;}
 .landing-link{color:var(--accent-color);font-family:var(--font-sans);font-weight:600;
     text-decoration:none;font-size:1.25rem;transition:color .3s;
     opacity:0;
@@ -720,7 +720,7 @@
                     function addLoadMoreButton() {
                         const btn = document.createElement('button');
                         btn.textContent = 'Load More';
-                        btn.style.cssText = 'grid-column: 1 / -1; margin: 1rem auto; padding: .75rem 1.5rem; background: var(--accent-color); color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold;';
+                        btn.style.cssText = 'grid-column: 1 / -1; margin: 1rem auto; padding: .75rem 1.5rem; background: var(--accent-color); color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;';
                         btn.addEventListener('click', () => {
                             btn.remove();
                             currentPage++;
