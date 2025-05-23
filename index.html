@@ -138,21 +138,12 @@ section {
         }
 
         /* Generative AI Lab */
-        #dropzone {
-            border: 3px dashed var(--accent-color);
-            border-radius: var(--border-radius-xl);
-            padding: 2rem;
-            text-align: center;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-            transition: background-color 0.3s;
-        }
-        #dropzone.dragover {
-            background-color: rgba(253, 187, 50, 0.1);
+        #dropzone{
+            display:flex;
+            flex-wrap:wrap;
+            justify-content:center;
+            gap:0.5rem;
+            margin-bottom:1rem;
         }
         #model-viewer-container {
             width: 100%;
@@ -251,6 +242,12 @@ section {
             margin: 5px; display: inline-block;
             border: 1px solid var(--accent-color);
         }
+.tool-badges h4{
+    margin:1.2rem 0 0.4rem;
+    font-size:0.95rem;
+    font-weight:700;
+    color:var(--accent-color);
+}
         .contact-links a {
             color: var(--accent-color);
             text-decoration: none;
@@ -397,14 +394,11 @@ section {
         <section id="lab" class="container">
             <div class="section-content">
                 <h2>Generative AI Lab</h2>
-                <div id="dropzone" aria-label="Drag and drop 3D model files here">
-                    <p>Drag & Drop USDZ/GLB files here</p>
-                    <p>or load a demo:</p>
-                    <div class="demo-model-buttons">
-                        <button data-model-src="/3d/sherman.glb">Sherman (GLB)</button>
-                        <button data-model-src="/3d/cn-tower.glb">CN Tower (GLB)</button>
-                        <button data-model-src="/3d/sacred-spiral.usdz">Sacred Spiral (USDZ)</button>
-                    </div>
+                <div id="dropzone" class="demo-model-buttons" aria-label="Load demo 3D models">
+                    <button data-model-src="/3d/sherman.glb">Sherman (GLB)</button>
+                    <button data-model-src="/3d/Sherman.usdz">Sherman (USDZ)</button>
+                    <button data-model-src="/3d/cn-tower.glb">CN&nbsp;Tower&nbsp;(GLB)</button>
+                    <button data-model-src="/3d/sacred-spiral.usdz">Sacred&nbsp;Spiral&nbsp;(USDZ)</button>
                 </div>
                 <div id="model-viewer-container">
                     <canvas id="model-viewer-canvas"></canvas>
@@ -462,20 +456,27 @@ section {
 
                 <h3>Tools We Love</h3>
                 <div class="tool-badges">
-                    <span>ChatGPT</span>
-                    <span>ElevenLabs</span>
-                    <span>RunwayML</span>
-                    <span>Pika</span>
+                    <h4>Video&nbsp;&amp;&nbsp;Streaming</h4>
+                    <span>OBS</span>
                     <span>Premiere</span>
+                    <span>After&nbsp;Effects</span>
+                    <h4>AI&nbsp;Creative</h4>
+                    <span>ChatGPT</span>
+                    <span>Gemini</span>
+                    <span>Midjourney</span>
+                    <span>Sora</span>
+                    <span>Firefly</span>
+                    <span>RunwayML</span>
+                    <span>Suno</span>
+                    <h4>3D&nbsp;&amp;&nbsp;Interactive</h4>
+                    <span>Unity</span>
+                    <span>Blender</span>
+                    <span>Luma&nbsp;AI</span>
+                    <span>BambuStudio</span>
+                    <h4>Imaging&nbsp;&amp;&nbsp;Design</h4>
                     <span>Photoshop</span>
                     <span>Illustrator</span>
-                    <span>After Effects</span>
-                    <span>Blender</span>
-                    <span>Suno</span>
-                    <span>BambuStudio</span>
                     <span>Lightroom</span>
-                    <span>Unity</span>
-                    <span>Luma&nbsp;AI</span>
                 </div>
             </div>
         </section>
@@ -827,21 +828,6 @@ section {
                 }
             });
 
-            dropzone.addEventListener('dragover', (event) => {
-                event.preventDefault();
-                dropzone.classList.add('dragover');
-            });
-            dropzone.addEventListener('dragleave', () => {
-                dropzone.classList.remove('dragover');
-            });
-            dropzone.addEventListener('drop', (event) => {
-                event.preventDefault();
-                dropzone.classList.remove('dragover');
-                const file = event.dataTransfer.files[0];
-                if (file) {
-                    loadFile(file);
-                }
-            });
 
             document.querySelectorAll('.demo-model-buttons button').forEach(button => {
                 button.addEventListener('click', () => {
@@ -867,32 +853,6 @@ section {
             }
         }
 
-        function loadFile(file) {
-            clearLabScene();
-            const reader = new FileReader();
-            const fileName = file.name.toLowerCase();
-            reader.onload = (event) => {
-                if (fileName.endsWith('.glb') || fileName.endsWith('.gltf')) {
-                    const loader = new GLTFLoader();
-                    loader.setDRACOLoader(dracoLoader);
-                    loader.parse(event.target.result, '', (gltf) => {
-                        currentLoadedModel = gltf.scene;
-                        centerAndScaleModel(currentLoadedModel);
-                        labScene.add(currentLoadedModel);
-                    });
-                } else if (fileName.endsWith('.usdz')) {
-                    // USDZLoader usually takes a URL, needs path to three.js/examples/jsm/libs/basis/
-                    // For direct file buffer, it might need more complex setup or server-side help.
-                    // For simplicity, assume USDZLoader can handle a data URL or blob URL.
-                    // This is a complex part. Let's attempt to load as if it takes a URL.
-                    const objectURL = URL.createObjectURL(file);
-                    loadModelFromURL(objectURL, true); // Mark as object URL
-                } else {
-                    alert('Unsupported file type. Please use GLB, GLTF, or USDZ.');
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
         
         function loadModelFromURL(url, isObjectURL = false) {
             clearLabScene();
