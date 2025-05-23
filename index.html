@@ -231,6 +231,12 @@
         /* volume */
         #volume-slider{width:120px;}
 
+        .vol-label{
+            font-size:0.8rem;
+            opacity:0.7;
+            user-select:none;
+        }
+
 
         /* About / Contact */
         .tool-badges img {
@@ -408,6 +414,7 @@
         <span id="band-label">AM</span>
 
         <!-- Volume -->
+        <label for="volume-slider" class="vol-label">Volume</label>
         <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" aria-label="Volume">
     </div>
 
@@ -447,6 +454,10 @@
                     <span>After Effects</span>
                     <span>Blender</span>
                     <span>Suno</span>
+                    <span>BambuStudio</span>
+                    <span>Lightroom</span>
+                    <span>Unity</span>
+                    <span>Luma&nbsp;AI</span>
                 </div>
             </div>
         </section>
@@ -943,6 +954,14 @@
                 const track = list[idx];
                 audio.src   = track.url;
                 titleEl.textContent = track.title;
+
+                // Once metadata is loaded, jump to a pseudo‑live offset
+                audio.onloadedmetadata = () => {
+                    if(audio.duration && !isNaN(audio.duration)){
+                        const offset = (Date.now()/1000) % audio.duration;
+                        audio.currentTime = offset;
+                    }
+                };
             }
 
             /* controls */
