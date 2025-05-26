@@ -940,42 +940,48 @@ section {
                 { title:'Ad Spot 03', url:'/audio/ads/Ad03.mp3' }
             ];
 
-            let currentBand     = 'AM';     // 'AM' | 'FM1' | 'FM2'
-            let list            = AM;       // active song playlist (not including ads)
-            let idx             = 0;        // index within list
-            let playingAd       = false;    // flag: ad currently playing?
-            let adIndex         = 0;        // rotate through ADS
+            // --- New radio sequencing logic: song → ad → next song ---
+            let currentBand = 'AM';       // 'AM' | 'FM1' | 'FM2'
+            let list        = AM;         // active song playlist (without ads)
+            let idx         = 0;          // index within list
+            let playingAd   = false;      // currently an ad?
+            let adIndex     = 0;          // rotate through ADS array
 
-            function load(nextSong = true){
-                if (playingAd) {           // finished an ad → play next song in list
+            function load() {
+                const isFM = (currentBand === 'FM1' || currentBand === 'FM2');
+
+                // --- Decide what to queue next ---
+                if (playingAd) {
+                    // Just finished an ad → queue the next song
                     playingAd = false;
-                    if(nextSong) idx = (idx + 1) % list.length;
-                }
-
-                // If we're at a song boundary and band is FM → insert ad first
-                if (!playingAd && (currentBand === 'FM1' || currentBand === 'FM2')) {
-                    const ad = ADS[adIndex % ADS.length];
-                    adIndex++;
+                    idx = (idx + 1) % list.length;
+                } else if (isFM) {
+                    // Finished a song on FM → queue an ad next
                     playingAd = true;
-                    audio.src = ad.url;
-                    titleEl.textContent = `Advertisement – ${ad.title}`;
-                    return;
                 }
 
-                const track = list[idx];
-                audio.src   = track.url;
-                titleEl.textContent = track.title;
+                // --- Select track object ---
+                let track;
+                if (playingAd) {
+                    track = ADS[adIndex % ADS.length];
+                    adIndex++;
+                    titleEl.textContent = `Advertisement – ${track.title}`;
+                } else {
+                    track = list[idx];
+                    titleEl.textContent = track.title;
+                }
 
-                // pseudo‑live offset on metadata
+                // --- Set source & pseudo‑live offset ---
+                audio.src = track.url;
                 audio.onloadedmetadata = () => {
-                    if(audio.duration && !isNaN(audio.duration)){
-                        const offset = (Date.now()/1000) % audio.duration;
+                    if (!playingAd && audio.duration && !isNaN(audio.duration)) {
+                        const offset = (Date.now() / 1000) % audio.duration;
                         audio.currentTime = offset;
                     }
                 };
             }
 
-            /* controls */
+            /* Play / pause button (unchanged) */
             playBtn.classList.add('paused');
             playBtn.addEventListener('click', ()=>{
                 if(audio.paused){
@@ -1000,15 +1006,19 @@ section {
                     bandLbl.textContent = 'AM';
                 }
                 idx = 0; playingAd = false;        // reset
-                load(false);                       // start at current song
+                load();                            // start at current song
                 if(playBtn.classList.contains('playing')) audio.play();
             });
 
-            audio.addEventListener('ended', ()=>{ load(); audio.play(); });
+            audio.addEventListener('ended', () => {
+                load();
+                audio.play();
+            });
 
             /* init */
             audio.volume = volSl.valueAsNumber;
-            load(false);
+            playingAd = false; // start with music, not ad
+            load();
         }
 
         // --- FOOTER EASTER EGG ---
