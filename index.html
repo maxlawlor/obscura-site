@@ -193,6 +193,11 @@ section {
             flex-wrap:wrap;
             margin-top:1rem;
         }
+        #band-label{
+            font-weight:600;
+            user-select:none;
+        }
+        #band-label:hover{ text-decoration:underline; }
 
         /* circular play / pause button */
         #play-pause{
@@ -940,6 +945,13 @@ section {
                 { title:'Ad Spot 03', url:'/audio/ads/Ad03.mp3' }
             ];
 
+            /* Station display names */
+            const stationNames = {
+                AM  : '88.3 Talk Radio',
+                FM1 : '103.1 Madness FM',
+                FM2 : '98.9 Uncanny FM'
+            };
+
             // --- New radio sequencing logic: song → ad → next song ---
             let currentBand = 'AM';       // 'AM' | 'FM1' | 'FM2'
             let list        = AM;         // active song playlist (without ads)
@@ -999,15 +1011,27 @@ section {
                 if (toggle.checked){               // FM
                     currentBand = (currentBand === 'FM1') ? 'FM2' : 'FM1'; // flip stations
                     list        = currentBand === 'FM1' ? FM1 : FM2;
-                    bandLbl.textContent = currentBand;
+                    bandLbl.textContent = stationNames[currentBand];
                 } else {                           // AM
                     currentBand = 'AM';
                     list        = AM;
-                    bandLbl.textContent = 'AM';
+                    bandLbl.textContent = stationNames[currentBand];
                 }
                 idx = 0; playingAd = false;        // reset
                 load();                            // start at current song
                 if(playBtn.classList.contains('playing')) audio.play();
+            });
+
+            // Click the band label to switch between FM1 ↔ FM2 while FM is active
+            bandLbl.style.cursor = 'pointer';
+            bandLbl.addEventListener('click', () => {
+                if (!toggle.checked) return; // Only when FM band active
+                currentBand = currentBand === 'FM1' ? 'FM2' : 'FM1';
+                list        = currentBand === 'FM1' ? FM1 : FM2;
+                bandLbl.textContent = stationNames[currentBand];
+                idx = 0; playingAd = false;
+                load();
+                if (!audio.paused) audio.play();
             });
 
             audio.addEventListener('ended', () => {
@@ -1019,6 +1043,7 @@ section {
             audio.volume = volSl.valueAsNumber;
             playingAd = false; // start with music, not ad
             load();
+            bandLbl.textContent = stationNames[currentBand];
         }
 
         // --- FOOTER EASTER EGG ---
