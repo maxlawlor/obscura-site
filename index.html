@@ -906,25 +906,67 @@ section {
 
             /* Playlists */
             const AM = [
-                { title:'Late Night Tape 01', url:'/audio/am/am01.mp3' },
-                { title:'Late Night Tape 02', url:'/audio/am/am02.mp3' }
-            ];
-            const FM = [
-                { title:'Drift 01', url:'/audio/fm/fm01.mp3' },
-                { title:'Drift 02', url:'/audio/fm/fm02.mp3' },
-                { title:'Drift 03', url:'/audio/fm/fm03.mp3' }
+                { title:'Podcast Episode 01', url:'/audio/am/Podcast01.mp3' }
             ];
 
-            let list = AM;
-            let idx  = Math.floor(Math.random()*list.length);
+            /* Two music stations */
+            const FM1 = [
+                { title:'All Of My Bins',        url:'/audio/fm01/All Of My Bins.mp3' },
+                { title:'FatRatʼs Saga',         url:'/audio/fm01/FatRatʼs Saga.mp3' },
+                { title:'Make the Website',      url:'/audio/fm01/Make the Website.mp3' },
+                { title:'Out Exploring',         url:'/audio/fm01/Out Exploring.mp3' },
+                { title:'Slop Slop Slop',        url:'/audio/fm01/Slop Slop Slop.mp3' },
+                { title:'Squallʼs AI Ghul',      url:'/audio/fm01/Squallʼs AI Ghul.mp3' },
+                { title:'Tell Me',               url:'/audio/fm01/Tell Me.mp3' },
+                { title:'Wizard of Moscow',      url:'/audio/fm01/Wizard of Moscow.mp3' }
+            ];
+            const FM2 = [
+                { title:'Distracted by Skeletons', url:'/audio/fm02/Distracted by Skeletons.mp3' },
+                { title:'Fractals',                url:'/audio/fm02/Fractals.mp3' },
+                { title:'Good Game!',              url:'/audio/fm02/Good Game!.mp3' },
+                { title:'Missing You (Cover)',     url:'/audio/fm02/Missing You (Cover).mp3' },
+                { title:'Obscura Sonnet',          url:'/audio/fm02/Obscura Sonnet.mp3' },
+                { title:'Prism',                   url:'/audio/fm02/Prism.mp3' },
+                { title:'Puppet',                  url:'/audio/fm02/Puppet.mp3' },
+                { title:'Quiet Anvil',             url:'/audio/fm02/Quiet Anvil.mp3' },
+                { title:'Too Far Apart',           url:'/audio/fm02/Too Far Apart.mp3' },
+                { title:'Why Do You Look Like a Dragon', url:'/audio/fm02/Why Do You Look Like a Dragon.mp3' }
+            ];
 
-            function load(i){
-                idx = (i + list.length) % list.length;
+            /* Ad bumpers (rotate) */
+            const ADS = [
+                { title:'Ad Spot 01', url:'/audio/ads/Ad01.mp3' },
+                { title:'Ad Spot 02', url:'/audio/ads/Ad02.mp3' },
+                { title:'Ad Spot 03', url:'/audio/ads/Ad03.mp3' }
+            ];
+
+            let currentBand     = 'AM';     // 'AM' | 'FM1' | 'FM2'
+            let list            = AM;       // active song playlist (not including ads)
+            let idx             = 0;        // index within list
+            let playingAd       = false;    // flag: ad currently playing?
+            let adIndex         = 0;        // rotate through ADS
+
+            function load(nextSong = true){
+                if (playingAd) {           // finished an ad → play next song in list
+                    playingAd = false;
+                    if(nextSong) idx = (idx + 1) % list.length;
+                }
+
+                // If we're at a song boundary and band is FM → insert ad first
+                if (!playingAd && (currentBand === 'FM1' || currentBand === 'FM2')) {
+                    const ad = ADS[adIndex % ADS.length];
+                    adIndex++;
+                    playingAd = true;
+                    audio.src = ad.url;
+                    titleEl.textContent = `Advertisement – ${ad.title}`;
+                    return;
+                }
+
                 const track = list[idx];
                 audio.src   = track.url;
                 titleEl.textContent = track.title;
 
-                // Once metadata is loaded, jump to a pseudo‑live offset
+                // pseudo‑live offset on metadata
                 audio.onloadedmetadata = () => {
                     if(audio.duration && !isNaN(audio.duration)){
                         const offset = (Date.now()/1000) % audio.duration;
@@ -948,17 +990,25 @@ section {
             volSl.addEventListener('input', ()=>{ audio.volume = volSl.valueAsNumber; });
 
             toggle.addEventListener('change', ()=>{
-                list = toggle.checked ? FM : AM;
-                bandLbl.textContent = toggle.checked ? 'FM' : 'AM';
-                load(0);
+                if (toggle.checked){               // FM
+                    currentBand = (currentBand === 'FM1') ? 'FM2' : 'FM1'; // flip stations
+                    list        = currentBand === 'FM1' ? FM1 : FM2;
+                    bandLbl.textContent = currentBand;
+                } else {                           // AM
+                    currentBand = 'AM';
+                    list        = AM;
+                    bandLbl.textContent = 'AM';
+                }
+                idx = 0; playingAd = false;        // reset
+                load(false);                       // start at current song
                 if(playBtn.classList.contains('playing')) audio.play();
             });
 
-            audio.addEventListener('ended', ()=>{ load(++idx); audio.play(); });
+            audio.addEventListener('ended', ()=>{ load(); audio.play(); });
 
             /* init */
             audio.volume = volSl.valueAsNumber;
-            load(idx);
+            load(false);
         }
 
         // --- FOOTER EASTER EGG ---
