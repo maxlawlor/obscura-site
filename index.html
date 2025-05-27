@@ -300,8 +300,8 @@
             font-size:1.5rem;line-height:1;
             grid-column: 3;
         }
-        #play-pause.paused::after{content:'►';}
-        #play-pause.playing::after{content:'❚❚';}
+        #play-pause.muted::after   { content:'🔇'; }
+        #play-pause.unmuted::after { content:'🔊'; }
 
         /* Seek buttons */
         .seek-button {
@@ -884,6 +884,10 @@
                 { title:'Ad Spot 03', url:'audio/ads/Ad03.mp3' }
             ];
 
+            // Shuffle FM playlists for a fresh order each visit
+            shuffleArray(FM1);
+            shuffleArray(FM2);
+
             /* Station dial */
             const stations = [
                 { name:'88.3 Talk Radio',  list:AM,  ads:false },
@@ -918,7 +922,7 @@
 
                     if (state.playingAd) {
                         track = ADS[state.adIdx % ADS.length];
-                        updateDisplay(`ADVERTISEMENT – ${track.title}`);
+                        updateDisplay("You’re listening to Obscura rAIdio");
                     } else {
                         const list = stations[stationIdx].list;
                         track = list[state.songIdx % list.length];
@@ -977,7 +981,7 @@
             /* Handle song/ad sequencing */
             audio.addEventListener('ended', () => {
                 const state = stationStates[stationIdx];
-                const wasPlayingBeforeEnd = !audio.paused; // Check if it was playing just before it ended
+                // const wasPlayingBeforeEnd = !audio.paused; // Check if it was playing just before it ended
 
                 if (stations[stationIdx].ads) {
                     state.playingAd = !state.playingAd;       // toggle song ↔ ad
@@ -991,8 +995,8 @@
                 }
 
                 state.playhead = 0;                           // fresh start for next track
-                // loadTrack will handle whether to autoplay based on wasPlayingBeforeEnd
-                loadTrack(false, wasPlayingBeforeEnd); 
+                // always autoplay next item
+                loadTrack(false, true);   // always autoplay next item
             });
 
             // Persist playhead while playing, and update lastSeen
@@ -1003,33 +1007,23 @@
             });
 
             /* Controls */
-            // Initial button state
-            playBtn.classList.add('paused');
+            // --- Mute / Unmute ---
+            audio.muted = true;            // start muted so autoplay is allowed
+            playBtn.classList.add('muted');
 
-            // Event listeners to keep button state in sync with audio element
-            audio.onplay = () => {
-                playBtn.classList.replace('paused', 'playing');
-            };
-            audio.onpause = () => {
-                playBtn.classList.replace('playing', 'paused');
-            };
-
-            playBtn.addEventListener('click',()=>{
-                if(audio.paused){
-                    // If audio is paused, attempt to play.
-                    // This will trigger the 'onplay' event listener.
-                    audio.play().catch(()=>{}); 
-                }else{
-                    // If audio is playing, pause it.
-                    // This will trigger the 'onpause' event listener.
-                    audio.pause();
-                }
+            function updateMuteUI(){
+                playBtn.classList.toggle('muted',   audio.muted);
+                playBtn.classList.toggle('unmuted', !audio.muted);
+            }
+            playBtn.addEventListener('click', () => {
+                audio.muted = !audio.muted;
+                updateMuteUI();
             });
             volSl.addEventListener('input',()=>{ audio.volume = volSl.valueAsNumber; });
 
             // MODIFIED: seek function is now async and uses the new loadTrack signature
             async function seek(dir){
-                const wasPlaying = !audio.paused; // Store current playback state
+                const wasMuted = audio.muted;
                 
                 // Change to the new station index
                 stationIdx = (stationIdx + dir + stations.length) % stations.length;
@@ -1038,10 +1032,10 @@
                 tuningDial.addEventListener('animationend',()=>tuningDial.classList.remove('seeking'),{once:true});
                 
                 // Await for the new track to load and its playhead to be set, 
-                // also telling it whether to attempt autoplay
-                await loadTrack(true, wasPlaying); 
-                
-                // Play/pause state and button update are handled inside loadTrack and by onplay/onpause listeners.
+                // always autoplay next
+                await loadTrack(true, true);
+                audio.muted = wasMuted;
+                updateMuteUI();
             }
             seekLeftBtn.addEventListener('click', ()=>seek(-1));
             tuningDial.addEventListener('click',  ()=>seek(1)); // Tuning dial seeks right
@@ -1050,9 +1044,9 @@
 
             /* Init */
             audio.volume = volSl.valueAsNumber;
-            // Initial load of the first station. It should start paused.
+            // Initial load of the first station. Play immediately (muted)
             // We await it to ensure the initial track metadata is loaded before any user interaction.
-            await loadTrack(false, false); 
+            await loadTrack(false, true);   // play immediately (muted)
         }
 
         // --- FOOTER EASTER EGG ---
