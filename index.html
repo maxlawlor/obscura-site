@@ -895,7 +895,8 @@
                 songIdx: 0,        // which song/podcast episode is playing
                 adIdx: 0,          // which ad is next
                 playingAd: false,  // toggle song ↔ ad
-                playhead: 0        // currentTime (seconds) within the track
+                playhead: 0,       // seconds offset within current track
+                lastSeen: null     // will start ticking the first time you tune in
             }));
             let stationIdx = 0;   // currently tuned station
 
@@ -905,50 +906,60 @@
                 displayEl.style.transform = 'translateX(0)';
             }
 
-            function loadTrack(resumePosition = true, shouldAutoplay = false) {
-                // Preserve last‑attached handlers (if any) that we stash on the <audio> element itself
-                if (audio._onLoadedMetadata) {
-                    audio.removeEventListener('loadedmetadata', audio._onLoadedMetadata);
-                }
-                if (audio._onError) {
-                    audio.removeEventListener('error', audio._onError);
-                }
+            async function loadTrack(resumePosition = true, shouldAutoplay = false) {
+                return new Promise((resolve) => {
+                    // — detach old one‑off handlers —
+                    if (audio._onLoadedMetadata)  audio.removeEventListener('loadedmetadata', audio._onLoadedMetadata);
+                    if (audio._onError)           audio.removeEventListener('error',          audio._onError);
 
-                const state = stationStates[stationIdx];
-                let track;
+                    const state = stationStates[stationIdx];
+                    let track;
 
-                if (state.playingAd) {
-                    track = ADS[state.adIdx % ADS.length];
-                    updateDisplay(`ADVERTISEMENT – ${track.title}`);
-                } else {
-                    const list = stations[stationIdx].list;
-                    track = list[state.songIdx % list.length];
-                    updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
-                }
-
-                audio.src = encodeURI(track.url);
-                audio.load(); // kick off network request
-
-                // Fresh handlers for this load – save references on the element so we can detach next time
-                audio._onLoadedMetadata = () => {
-                    audio.currentTime = resumePosition ? state.playhead : 0;
-
-                    if (shouldAutoplay) {
-                        audio.play().catch(e => {
-                            console.warn("Autoplay prevented:", e);
-                            audio.pause();
-                        });
+                    if (state.playingAd) {
+                        track = ADS[state.adIdx % ADS.length];
+                        updateDisplay(`ADVERTISEMENT – ${track.title}`);
                     } else {
-                        audio.pause(); // ensure silence until user hits play
+                        const list = stations[stationIdx].list;
+                        track = list[state.songIdx % list.length];
+                        updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
                     }
-                };
 
-                audio._onError = () => {
-                    console.error(`Error loading audio for ${track.url}. Verify file path & availability.`);
-                };
+                    audio.src = encodeURI(track.url);
+                    audio.load();
 
-                audio.addEventListener('loadedmetadata', audio._onLoadedMetadata, { once: true });
-                audio.addEventListener('error',          audio._onError,          { once: true });
+                    audio._onLoadedMetadata = () => {
+                        let target = 0;
+                        if (resumePosition) {
+                            const elapsed = state.lastSeen ? (Date.now() - state.lastSeen) / 1000 : 0;
+                            target = state.playhead + elapsed;
+                            if (audio.duration && !Number.isNaN(audio.duration) && target >= audio.duration) {
+                                target = target % audio.duration;
+                            }
+                        }
+                        audio.currentTime = target;
+                        state.lastSeen = Date.now();
+
+                        if (shouldAutoplay) {
+                            audio.play().catch(e => {
+                                if (typeof process === 'undefined' || !process.env || process.env.NODE_ENV !== 'production') {
+                                    console.warn("Autoplay prevented:", e);
+                                }
+                                audio.pause();
+                            });
+                        } else {
+                            audio.pause();
+                        }
+                        resolve(); // metadata ready
+                    };
+
+                    audio._onError = () => {
+                        console.error(`Error loading audio for ${track.url}. Verify file path & availability.`);
+                        resolve();
+                    };
+
+                    audio.addEventListener('loadedmetadata', audio._onLoadedMetadata, { once: true });
+                    audio.addEventListener('error',          audio._onError,          { once: true });
+                });
             }
 
             /* Handle song/ad sequencing */
@@ -972,9 +983,11 @@
                 loadTrack(false, wasPlayingBeforeEnd); 
             });
 
-            // Persist playhead while playing
+            // Persist playhead while playing, and update lastSeen
             audio.addEventListener('timeupdate', () => {
-                stationStates[stationIdx].playhead = audio.currentTime;
+                const st = stationStates[stationIdx];
+                st.playhead = audio.currentTime;
+                st.lastSeen = Date.now();
             });
 
             /* Controls */
@@ -1008,6 +1021,7 @@
                 
                 // Save playhead for the current station *before* changing stationIdx
                 stationStates[stationIdx].playhead = audio.currentTime;
+                stationStates[stationIdx].lastSeen  = Date.now();
                 
                 // Change to the new station index
                 stationIdx = (stationIdx + dir + stations.length) % stations.length;
