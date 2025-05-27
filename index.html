@@ -549,7 +549,6 @@
         <section id="radio-section" class="container">
             <div class="section-content">
                 <img src="/logo/raidio.svg" alt="Obscura rAIdio Logo" class="radio-logo">
-                <!-- Removed "Sounds for the liminal space." paragraph -->
                 <div id="radio-block">
                     <div id="radio-display-container">
                         <div id="radio-display"></div>
@@ -878,8 +877,10 @@
                     frequency: '88.3 AM',
                     type: 'AM',
                     playlist: [{ title: 'NotebookLM Podcast', url: '/audio/am/NotebookLM-Podcast.mp3', duration: 1800 }], // 30 minutes
-                    streamTimeline: [], // Computed on init, maps sequence
-                    lastKnownTrackIndex: 0, // Last track played from this station's sequence
+                    streamTimeline: [], // Populated on init
+                    cycleDuration: 0,
+                    streamOffsetAtLastTune: 0, // Where in its cycle it was last tuned
+                    lastTuneTime: Date.now(), // When it was last tuned
                 },
                 {
                     name: 'Madness FM',
@@ -895,9 +896,11 @@
                         { title:'Tell Me', url:'/audio/fm01/Tell-Me.mp3', duration: 160 },
                         { title:'Wizard of Moscow', url:'/audio/fm01/Wizard-of-Moscow.mp3', duration: 220 }
                     ]),
-                    adPlaylist: shuffleArray([...ADS]), // Deep copy & shuffle for independence
+                    adPlaylist: shuffleArray([...ADS]),
                     streamTimeline: [],
-                    lastKnownTrackIndex: 0,
+                    cycleDuration: 0,
+                    streamOffsetAtLastTune: 0,
+                    lastTuneTime: Date.now(),
                 },
                 {
                     name: 'Unhinged FM',
@@ -915,9 +918,11 @@
                         { title:'Too Far Apart', url:'/audio/fm02/Too-Far-Apart.mp3', duration: 155 },
                         { title:'Why Do You Look Like a Dragon', url:'/audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3', duration: 240 }
                     ]),
-                    adPlaylist: shuffleArray([...ADS]), // Deep copy & shuffle
+                    adPlaylist: shuffleArray([...ADS]),
                     streamTimeline: [],
-                    lastKnownTrackIndex: 0,
+                    cycleDuration: 0,
+                    streamOffsetAtLastTune: 0,
+                    lastTuneTime: Date.now(),
                 }
             ];
 
@@ -925,24 +930,23 @@
             // This builds a complete, cyclical sequence of songs/ads for each FM station
             stations.forEach(station => {
                 let currentTotalDuration = 0;
-                station.streamTimeline = []; // Reset for clarity on rebuild
+                station.streamTimeline = [];
 
                 if (station.type === 'AM') {
-                    const track = station.playlist[0]; // AM just has one track
+                    const track = station.playlist[0];
                     station.streamTimeline.push({
                         item: track,
                         start: 0,
                         duration: track.duration,
                         isAd: false
                     });
-                    // AM acts as if its cycle is infinite, but we'll use its duration for direct seek calculation.
                     station.cycleDuration = track.duration;
                 } else { // FM stations: Interleave songs and ads
                     // Ensure playlists are at least as long as each other by cycling content if needed
                     const longestPlaylistLength = Math.max(station.playlist.length, station.adPlaylist.length);
 
                     for (let i = 0; i < longestPlaylistLength; i++) {
-                        const song = station.playlist[i % station.playlist.length]; // Cycle songs if ad list is longer
+                        const song = station.playlist[i % station.playlist.length];
                         station.streamTimeline.push({
                             item: song,
                             start: currentTotalDuration,
@@ -951,7 +955,7 @@
                         });
                         currentTotalDuration += song.duration;
 
-                        const ad = station.adPlaylist[i % station.adPlaylist.length]; // Cycle ads if song list is longer
+                        const ad = station.adPlaylist[i % station.adPlaylist.length];
                         station.streamTimeline.push({
                             item: ad,
                             start: currentTotalDuration,
@@ -992,25 +996,37 @@
                 element.style.transform = 'translateX(0)'; // Reset initial position
 
                 // Add padding spaces to the text to ensure visible gap before repetition
-                const paddedText = originalText + '         '; // 9 spaces
-                element.innerHTML = paddedText + paddedText; // Duplicate for seamless looping
-
-                setTimeout(() => { // Allow DOM to render for accurate scrollWidth
+                const buffer = '         '; // More spaces for separation
+                element.innerHTML = originalText + buffer; // Start with one copy and buffer
+                
+                // Allow DOM to render for accurate scrollWidth before duplication
+                setTimeout(() => {
                     const containerWidth = element.parentElement.clientWidth - (parseFloat(getComputedStyle(element.parentElement).paddingLeft) * 2);
-                    const singleTextWidth = element.scrollWidth / 2; // Width of one padded text instance
+                    const singleTextWidth = element.scrollWidth; // Actual width of the first padded text instance
 
                     if (singleTextWidth <= containerWidth && !prefersReducedMotion) {
-                        // If text fits, but still want a 'scroll' feel
-                        // Make it subtly scroll slowly or reset to show full text.
-                        element.style.transform = 'translateX(0)';
-                        element.innerHTML = originalText; // Revert to single text
-                        // You could add a subtle slow scroll here if needed, or simply static for fit
-                        return;
+                         // If text fits (or almost fits) and prefers-reduced-motion is false, still create a subtle scroll effect
+                         // Duplicate only if necessary for a consistent scroll effect
+                         element.innerHTML = paddedText + paddedText; // Duplicate for seamless looping
+                         // Ensure singleTextWidth is re-calculated after duplication if needed
                     } else if (prefersReducedMotion) {
                         // Just show static text if reduced motion is preferred
                         element.style.transform = 'translateX(0)';
-                        element.innerHTML = originalText;
+                        element.innerHTML = originalText; // Revert to single text
                         return;
+                    }
+
+                    // For continuous looping, duplicate the content inside
+                    element.innerHTML = originalText + buffer + originalText + buffer;
+
+                    // Re-calculate singleTextWidth based on one full padded text instance
+                    const actualSingleTextWidth = element.scrollWidth / 2; // Now correctly measures one full padded text
+
+                    if (actualSingleTextWidth <= containerWidth) {
+                         // If even after padding, it's still smaller than container, don't scroll
+                         element.style.transform = 'translateX(0)';
+                         element.innerHTML = originalText; // No need to scroll, show original text
+                         return;
                     }
 
 
@@ -1020,7 +1036,7 @@
                     function animateScroll() {
                         currentPosition -= scrollSpeed;
                         // When the first full copy has scrolled off the left edge, reset to start.
-                        if (currentPosition <= -singleTextWidth) {
+                        if (currentPosition <= -actualSingleTextWidth) {
                             currentPosition = 0;
                         }
                         element.style.transform = `translateX(${currentPosition}px)`;
@@ -1033,44 +1049,45 @@
 
             // This function now calculates the "current live moment" in the stream and plays it
             function tuneToStation(station, isSeekAction = false) {
-                const nowInSeconds = Date.now() / 1000;
-                let playDuration = station.cycleDuration;
-                if (station.type === 'AM') { // AM is simpler, effectively just loops its one podcast
-                    playDuration = station.playlist[0].duration;
-                }
+                // When tuning to a new station (or initial load/seek), update its lastTuneTime
+                // and use its last known offset to figure out the current "live" stream position.
+                const timeSinceLastTune = (Date.now() - station.lastTuneTime) / 1000;
+                let currentStreamPosition = (station.streamOffsetAtLastTune + timeSinceLastTune) % station.cycleDuration;
 
-                // Calculate where we are in the continuous stream's cycle
-                const timeInCycle = nowInSeconds % playDuration;
-
+                // Find which segment in the stream is playing at 'currentStreamPosition'
                 let trackToPlay = null;
-                let startTimeForAudio = 0;
-
-                // Find which segment in the stream is playing at 'timeInCycle'
-                for (const segment of station.streamTimeline) {
-                    if (timeInCycle >= segment.start && timeInCycle < (segment.start + segment.duration)) {
+                let segmentIndex = 0; // To store the index of the segment
+                for (let i = 0; i < station.streamTimeline.length; i++) {
+                    const segment = station.streamTimeline[i];
+                    if (currentStreamPosition >= segment.start && currentStreamPosition < (segment.start + segment.duration)) {
                         trackToPlay = segment.item;
-                        startTimeForAudio = timeInCycle - segment.start; // Calculate offset into this specific track
+                        segmentIndex = i;
                         break;
                     }
                 }
 
-                // Fallback in case calculation fails (should not happen with proper setup)
+                // Fallback (should not happen with correct data)
                 if (!trackToPlay && station.streamTimeline.length > 0) {
                     trackToPlay = station.streamTimeline[0].item;
-                    startTimeForAudio = 0;
+                    segmentIndex = 0;
+                    currentStreamPosition = 0; // Reset to start if error
                 } else if (!trackToPlay) { // Absolute fallback if stream timeline is empty
-                    return; // Cannot play anything
+                    updateScrollingDisplay('Error: No audio stream available.', isSeekAction);
+                    audio.pause();
+                    audio.src = '';
+                    return;
                 }
+
+                // Update station's state to remember this exact stream moment
+                station.streamOffsetAtLastTune = currentStreamPosition;
+                station.lastTuneTime = Date.now(); // Record current time for future calculations
 
                 const displayString = `${station.frequency} ${station.name}: ${trackToPlay.title}`;
                 updateScrollingDisplay(displayString, isSeekAction); // Update scrolling text
 
                 audio.src = trackToPlay.url;
                 audio.onloadedmetadata = () => {
-                    // Set current time to always be 0.
-                    // This resolves the user's explicit request: "songs must always start right at the very beginning".
-                    audio.currentTime = 0; // Always start at 0:00
-
+                    audio.currentTime = 0; // **Always start at 0:00 for the selected track**
                     if (playBtn.classList.contains('playing')) {
                          audio.play().catch(e => console.warn("Autoplay prevented:", e));
                     }
@@ -1085,9 +1102,12 @@
             // Handles logic for when a track ends naturally (automatic progression within the station's stream)
             audio.addEventListener('ended', () => {
                 const currentStation = stations[currentStationIndex];
-                // Simply retune to the current station to get the next track in its stream.
-                // The 'ended' event means the current segment finished, so the time will naturally advance.
-                tuneToStation(currentStation);
+                // When a track ends, conceptually advance the streamOffset by its duration,
+                // then retune to pick up the next track from its beginning.
+                currentStation.streamOffsetAtLastTune = (currentStation.streamOffsetAtLastTune + audio.duration) % currentStation.cycleDuration;
+                currentStation.lastTuneTime = Date.now(); // Update timestamp for continuous calculation
+
+                tuneToStation(currentStation); // Retune to get the next track in the sequence
             });
 
 
@@ -1107,6 +1127,13 @@
 
             // Seek functionality
             function seekStation(direction) {
+                // Before changing station, update current station's "live" state
+                const prevStation = stations[currentStationIndex];
+                const timeSinceLastTune = (Date.now() - prevStation.lastTuneTime) / 1000;
+                prevStation.streamOffsetAtLastTune = (prevStation.streamOffsetAtLastTune + timeSinceLastTune) % prevStation.cycleDuration;
+                prevStation.lastTuneTime = Date.now();
+
+
                 currentStationIndex += direction;
                 if (currentStationIndex < 0) {
                     currentStationIndex = stations.length - 1; // Wrap around to last station
