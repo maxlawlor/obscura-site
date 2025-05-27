@@ -856,12 +856,11 @@
             const playBtn     = document.getElementById('play-pause');
             const seekLeftBtn = document.getElementById('seek-left');
             const seekRightBtn= document.getElementById('seek-right');
-            const bandLbl     = document.getElementById('band-label');
             const radioDisplay= document.getElementById('radio-display');
             const tuningDial  = document.getElementById('tuning-dial');
             const volSl       = document.getElementById('volume-slider');
 
-            if (!audio || !playBtn || !seekLeftBtn || !seekRightBtn || !bandLbl || !radioDisplay || !tuningDial || !volSl) return;
+            if (!audio || !playBtn || !seekLeftBtn || !seekRightBtn || !radioDisplay || !tuningDial || !volSl) return;
 
             // Define ad bumper tracks with durations (in seconds)
             const ADS = [
@@ -1087,7 +1086,8 @@
 
                 audio.src = trackToPlay.url;
                 audio.onloadedmetadata = () => {
-                    audio.currentTime = 0; // **Always start at 0:00 for the selected track**
+                    const offsetWithinTrack = currentStreamPosition - station.streamTimeline[segmentIndex].start;
+                    audio.currentTime = Math.max(0, offsetWithinTrack);
                     if (playBtn.classList.contains('playing')) {
                          audio.play().catch(e => console.warn("Autoplay prevented:", e));
                     }
