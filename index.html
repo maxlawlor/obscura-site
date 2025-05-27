@@ -150,13 +150,59 @@
             width: 100%;
             max-width: 600px; /* Constrain width for radio unit */
             box-sizing: border-box;
+            position: relative; /* Needed for absolute positioning of track */
         }
+
+        .radio-logo {
+            width: 200px; /* Adjust size as needed */
+            height: auto;
+            margin-bottom: 1rem;
+        }
+
         #radio-block .radio-description {
             margin-bottom: 1rem;
         }
         #radio-audio{
             display:none; /* Hidden controls for true radio feel */
         }
+
+        /* --- Radio Display (Scrolling Text) --- */
+        #radio-display-container {
+            width: 90%; /* Max width for display */
+            height: 2.5rem; /* Fixed height for display */
+            background-color: #222; /* Dark background for display */
+            border: 2px solid #555;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            overflow: hidden; /* Important for scrolling effect */
+            position: relative;
+            display: flex;
+            align-items: center; /* Center text vertically */
+            /* justify-content: center; Removed for scrolling */
+        }
+
+        #radio-display {
+            white-space: nowrap; /* Prevent text wrapping */
+            font-family: monospace;
+            color: #0F0; /* Classic green LED text */
+            font-size: 1.2em;
+            padding: 0 0.5rem; /* Some internal padding */
+            box-sizing: border-box;
+            position: absolute; /* Positioned for scrolling */
+            left: 0;
+            animation: none; /* Controlled by JS, not CSS keyframes */
+        }
+
+        /* Animation for seeking effect on display text */
+        @keyframes seekFade {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        #radio-display.seek-active {
+            animation: seekFade 0.3s ease-out;
+        }
+
 
         /* --- Radio Controls Grid Layout --- */
         .radio-controls-grid {
@@ -166,6 +212,9 @@
             gap: 1.5rem;
             margin-top: 1.5rem;
             width: 100%;
+        }
+        .radio-controls-grid > * {
+            place-self: center; /* Horizontally and vertically center */
         }
 
         .radio-component {
@@ -177,87 +226,67 @@
         .dial-label {
             font-weight: 600;
             user-select: none;
-            margin-bottom: 0.5rem;
+            margin-top: 0.5rem; /* Space between dial and label */
             color: var(--accent-color);
+            font-size: 0.9em;
         }
 
         /* Volume Dial */
+        .volume-component {
+            grid-column: 1; /* First column */
+            display: flex;
+            flex-direction: column-reverse; /* Label on top */
+            align-items: center;
+            height: 120px; /* Allow space for rotated slider and track */
+            justify-content: center;
+            position: relative;
+        }
+
         .volume-component input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
-            width: 40px; /* Diameter of the circle */
-            height: 40px;
-            background: transparent;
+            width: 100px; /* This becomes height when rotated */
+            height: 20px; /* This becomes width when rotated (thickness of thumb area) */
+            background: transparent; /* Hide default track */
             cursor: pointer;
             outline: none;
             transform: rotate(-90deg); /* Make it vertical */
-            margin: 10px 0; /* Adjust margin for rotated element */
-        }
-        .volume-component {
-            grid-column: 1; /* First column */
-            height: 100%; /* Take full height of row */
-            justify-content: center;
-            position: relative;
+            margin: 0; /* Reset margins */
+            position: relative; /* For thumb positioning relative to rotated element */
+            z-index: 2; /* Ensure slider thumb is above track */
         }
         .volume-component input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px; /* Size of the knob */
-            height: 20px;
+            width: 28px; /* Size of the knob */
+            height: 28px;
             border-radius: 50%;
             background: var(--accent-color);
-            box-shadow: 0 0 0 4px var(--background-color), 0 0 0 6px var(--accent-color); /* concentric rings */
+            border: 3px solid var(--card-bg-color); /* Inner ring */
+            box-shadow: 0 0 0 3px var(--accent-color); /* Outer ring */
             transition: background .3s ease;
         }
         .volume-component input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: var(--accent-color);
-            box-shadow: 0 0 0 4px var(--background-color), 0 0 0 6px var(--accent-color);
+            border: 3px solid var(--card-bg-color);
+            box-shadow: 0 0 0 3px var(--accent-color);
             transition: background .3s ease;
         }
-        .volume-component .dial-base {
-            position: absolute;
-            width: 60px; /* Base for the dial */
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-color);
-            background: #e0e0e0; /* light grey for dial base */
-            z-index: -1; /* Behind the slider thumb */
-        }
 
-
-        /* Frequency Dial (simulated by clickable text) */
-        .freq-component {
-            grid-column: 5; /* Last column */
-            height: 100%; /* Take full height of row */
-            justify-content: center;
-            position: relative;
-        }
-        .freq-component .dial-label {
-            font-size: 1.1rem;
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius-xl);
-            background-color: var(--background-color); /* Yellow background for freq display */
-            border: 2px solid var(--accent-color);
-            transition: background-color .3s ease, transform .1s ease;
-        }
-        .freq-component .dial-label:hover {
-            transform: scale(1.05);
-        }
-        .freq-component .dial-base {
+        /* Volume Track Background */
+        .volume-component .volume-track {
             position: absolute;
-            width: 100px; /* Base for the dial */
-            height: 100px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-color);
-            background: #e0e0e0; /* light grey for dial base */
-            z-index: -1; /* Behind the label */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 6px; /* Thickness of the track */
+            height: 100px; /* Length of the track */
+            background: #bbb; /* Track color */
+            border-radius: 3px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1; /* Below the slider thumb */
         }
 
 
@@ -291,20 +320,42 @@
              color: white;
         }
 
-        /* Animation for seeking effect on track title (now applies to station name) */
-        @keyframes seekFade {
-            0% { opacity: 1; transform: translateX(0); }
-            50% { opacity: 0; transform: translateX(0); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-        #band-label.seek-active { /* Apply animation to band-label */
-            animation: seekFade 0.3s ease-out;
+        /* Frequency Dial (Round Tuning Dial) */
+        .freq-component {
+            grid-column: 5;
+            display: flex;
+            flex-direction: column; /* Dial on top, label below */
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Hide the specific track title text */
-        .track-info {
-            /* This div is now redundant as band-label takes its place, but keeping to avoid breaking structure */
-            display: none;
+        #tuning-dial {
+            width: 60px; /* Size of the circular dial */
+            height: 60px;
+            border-radius: 50%;
+            background: #e0e0e0; /* Light grey dial base */
+            border: 2px solid var(--accent-color);
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem; /* Space between dial and label */
+            transition: transform 0.1s ease;
+        }
+
+        #tuning-dial:hover {
+            transform: scale(1.05);
+        }
+
+        .dial-arrow {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid var(--accent-color); /* Triangle pointing up */
+            position: absolute;
+            top: 5px; /* Position at the top of the dial */
         }
 
 
@@ -367,12 +418,11 @@
         /* Example .col-* */
         .col-12 { grid-column: span 12; }
         .col-6 { grid-column: span 6; }
-        /* Add more col classes as needed for responsive designs if CSS Grid alone isn't sufficient for #portfolio-grid pattern */
+
         #landing-hero{
             position:relative;width:100%;height:100vh;overflow:hidden;
             display:flex;align-items:center;justify-content:center;
         }
-        /* #sphere-canvas element removed */
         .landing-inner{
             text-align:center;
             position:relative;
@@ -407,7 +457,7 @@
           #portfolio-grid  {grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
           .portfolio-intro {font-size:.9rem; text-align:center;}
           .radio-controls-grid {
-              grid-template-columns: repeat(3, 1fr); /* Simplified for smaller screens */
+              grid-template-columns: 1fr 1fr 1fr; /* Simplified for smaller screens */
               gap: 0.5rem;
           }
           .volume-component, .freq-component {
@@ -485,12 +535,17 @@
                     Sounds for the liminal space. Tune in to explore frequencies beyond.
                 </p>
                 <div id="radio-block">
-                    <!-- Removed .track-info, using band-label directly for display -->
+                    <img src="/logo/raidio.svg" alt="Obscura rAIdio Logo" class="radio-logo">
+
+                    <div id="radio-display-container">
+                        <div id="radio-display"></div>
+                    </div>
+
                     <div class="radio-controls-grid">
                         <div class="radio-component volume-component">
                             <label for="volume-slider" class="dial-label">VOL</label>
                             <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" aria-label="Volume dial">
-                            <div class="dial-base"></div>
+                            <div class="volume-track"></div> <!-- New element for the track visual -->
                         </div>
 
                         <button id="seek-left" class="seek-button" aria-label="Seek previous station">◀◀</button>
@@ -500,8 +555,10 @@
                         <button id="seek-right" class="seek-button" aria-label="Seek next station">▶▶</button>
 
                         <div class="radio-component freq-component">
-                            <span id="band-label" class="dial-label clickable-dial" aria-label="Frequency dial, click to change station"></span>
-                            <div class="dial-base"></div>
+                            <div id="tuning-dial" role="button" aria-label="Tuning dial, click to change station">
+                                <span class="dial-arrow"></span>
+                            </div>
+                            <span class="dial-label" id="band-label">FREQ</span> <!-- Label for the dial, was band-label -->
                         </div>
                     </div>
                     <audio id="radio-audio" preload="metadata"></audio>
@@ -643,13 +700,11 @@
             initPortfolio();
             initRadio();
             initFooterEasterEgg();
-
-            // Removed Three.js specific imports as the Generative AI Lab is removed
         }
 
 
         // --- HERO CANVAS (Removed) ---
-        // The initHeroCanvas function is no longer present.
+        // The initHeroCanvas function and any Three.js specific code were removed.
 
 
         // --- SACRED-NETWORK NAV OVERLAY ---
@@ -777,14 +832,15 @@
         // --- UPDATED OBSCURA rAIDIO ---
         function initRadio() {
             const audio       = document.getElementById('radio-audio');
-            // const titleEl     = document.getElementById('radio-current-track'); // Removed as per request
             const playBtn     = document.getElementById('play-pause');
             const seekLeftBtn = document.getElementById('seek-left');
             const seekRightBtn= document.getElementById('seek-right');
-            const bandLbl     = document.getElementById('band-label'); // This will now display station name/frequency
+            const bandLbl     = document.getElementById('band-label'); // "FREQ" label below tuning dial
+            const radioDisplay= document.getElementById('radio-display'); // New scrolling text display
+            const tuningDial  = document.getElementById('tuning-dial'); // The clickable frequency dial
             const volSl       = document.getElementById('volume-slider');
 
-            if (!audio || !playBtn || !seekLeftBtn || !seekRightBtn || !bandLbl || !volSl) return;
+            if (!audio || !playBtn || !seekLeftBtn || !seekRightBtn || !bandLbl || !radioDisplay || !tuningDial || !volSl) return;
 
             // Define ad bumper tracks once
             const ADS = [
@@ -800,7 +856,7 @@
                     frequency: '88.3 AM',
                     type: 'AM',
                     playlist: [{ title: 'NotebookLM Podcast', url: '/audio/am/NotebookLM-Podcast.mp3' }],
-                    currentTrackIndex: 0, // AM loops the same track
+                    currentTrackIndex: 0,
                     isPlayingAd: false
                 },
                 {
@@ -846,20 +902,64 @@
             ];
 
             let currentStationIndex = 0; // Start with the first station (Obscura Talk Radio)
+            let scrollAnimationId; // To control requestAnimationFrame
 
-            function updateDisplay(station, seekAction = false) {
-                const displayString = `${station.frequency} ${station.name}`;
+            function updateDisplay(station, track, seekAction = false) {
+                const fullDisplayString = `${station.frequency} ${station.name}: ${track.title}`;
+                bandLbl.textContent = station.frequency; // Update static FREQ label
+
                 if (seekAction) {
-                    bandLbl.textContent = 'Seeking...';
-                    bandLbl.classList.add('seek-active');
-                    bandLbl.addEventListener('animationend', () => {
-                        bandLbl.classList.remove('seek-active');
-                        bandLbl.textContent = displayString;
-                    }, { once: true });
+                    radioDisplay.textContent = 'SEEKING...'; // Show seeking message
+                    radioDisplay.classList.add('seek-active');
+                    // Stop any ongoing scrolling animation
+                    cancelAnimationFrame(scrollAnimationId);
+                    radioDisplay.style.transform = 'translateX(0)';
+                    
+                    radioDisplay.addEventListener('animationend', function handler() {
+                        radioDisplay.classList.remove('seek-active');
+                        radioDisplay.textContent = fullDisplayString;
+                        startScrolling(radioDisplay); // Start scrolling for the new track
+                        this.removeEventListener('animationend', handler); // Clean up
+                    });
                 } else {
-                    bandLbl.textContent = displayString;
+                    radioDisplay.textContent = fullDisplayString;
+                    startScrolling(radioDisplay); // Start scrolling immediately
                 }
             }
+
+            // Function to start and manage the scrolling text
+            function startScrolling(element) {
+                cancelAnimationFrame(scrollAnimationId); // Stop any existing animation
+                element.style.transform = 'translateX(0)'; // Reset position
+                
+                setTimeout(() => { // Small delay to ensure content width is calculated after DOM update
+                    const containerWidth = element.offsetWidth;
+                    const textWidth = element.scrollWidth;
+
+                    if (textWidth > containerWidth) {
+                        let currentScrollPosition = 0;
+                        const scrollSpeed = 0.5; // pixels per frame
+                        const gap = 30; // pixels of gap before repeating text
+
+                        function animateScroll() {
+                            if (element.textContent === 'SEEKING...') { // Stop if seeking message is displayed
+                                cancelAnimationFrame(scrollAnimationId);
+                                return;
+                            }
+
+                            currentScrollPosition -= scrollSpeed;
+                            // If text scrolls off the left, reset position to just after the gap
+                            if (currentScrollPosition < -(textWidth + gap)) {
+                                currentScrollPosition = 0; // Starts from left again
+                            }
+                            element.style.transform = `translateX(${currentScrollPosition}px)`;
+                            scrollAnimationId = requestAnimationFrame(animateScroll);
+                        }
+                        scrollAnimationId = requestAnimationFrame(animateScroll);
+                    }
+                }, 100);
+            }
+
 
             function playCurrentTrackOfStation(station, seekAction = false) {
                 let trackToPlay;
@@ -876,22 +976,11 @@
                     }
                 }
 
-                updateDisplay(station, seekAction); // Update display with station info
+                updateDisplay(station, trackToPlay, seekAction);
 
                 audio.src = trackToPlay.url;
                 audio.onloadedmetadata = () => {
-                    // For continuous content (AM podcast, FM songs), use pseudo-live offset
-                    // Ads always start from beginning
-                    if (station.type === 'AM' || !station.isPlayingAd) {
-                        if (audio.duration && !isNaN(audio.duration)) {
-                            const offset = (Date.now() / 1000) % audio.duration;
-                            audio.currentTime = offset;
-                        } else { // Fallback if duration is NaN (e.g. invalid mp3)
-                            audio.currentTime = 0;
-                        }
-                    } else { // Ads start from the beginning
-                        audio.currentTime = 0;
-                    }
+                    audio.currentTime = 0; // Always start at the beginning
                 };
 
                 if (playBtn.classList.contains('playing')) {
@@ -950,17 +1039,21 @@
                 // Reset state for new station before playing
                 const newStation = stations[currentStationIndex];
                 if (newStation.type === 'FM') {
-                    newStation.isPlayingAd = false; // Always start FM with a song when seeking
+                    newStation.isPlayingAd = false; // When seeking to FM, always start with a song
+                    // Reset indices for the new station and reshuffle
+                    newStation.currentTrackIndex = 0;
+                    newStation.currentAdIndex = 0;
+                    shuffleArray(newStation.playlist);
+                    shuffleArray(newStation.adPlaylist);
                 }
                 // AM already handles looping and doesn't have ads.
-                // Indices are correctly managed by the 'ended' listener for continuous playback.
 
                 playCurrentTrackOfStation(newStation, true); // True indicates a seek action for animation
             }
 
             seekLeftBtn.addEventListener('click', () => seekStation(-1));
             seekRightBtn.addEventListener('click', () => seekStation(1));
-            bandLbl.addEventListener('click', () => seekStation(1)); // "Frequency dial" clicks to seek right
+            tuningDial.addEventListener('click', () => seekStation(1)); // New frequency dial clicks to seek right
 
             /* Init */
             audio.volume = volSl.valueAsNumber;
