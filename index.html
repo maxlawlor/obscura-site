@@ -895,8 +895,9 @@
                 songIdx: 0,        // which song/podcast episode is playing
                 adIdx: 0,          // which ad is next
                 playingAd: false,  // toggle song ↔ ad
-                playhead: 0,       // seconds offset within current track
-                lastSeen: null     // will start ticking the first time you tune in
+                playhead: 0,       // legacy – still used for ads / loops
+                lastSeen: null,    // last time we actually listened
+                startClock: null   // absolute epoch when this track started playing “on air”
             }));
             let stationIdx = 0;   // currently tuned station
 
@@ -928,15 +929,26 @@
                     audio.load();
 
                     audio._onLoadedMetadata = () => {
-                        let target = 0;
-                        if (resumePosition) {
-                            const elapsed = state.lastSeen ? (Date.now() - state.lastSeen) / 1000 : 0;
-                            target = state.playhead + elapsed;
-                            if (audio.duration && !Number.isNaN(audio.duration) && target >= audio.duration) {
-                                target = target % audio.duration;
-                            }
+                        let target;           // seconds into current track
+
+                        if (state.startClock !== null) {
+                            // Station has an existing on‑air clock ⇒ pick up from there
+                            const elapsed = (Date.now() - state.startClock) / 1000;
+                            target = audio.duration && !Number.isNaN(audio.duration)
+                                   ? elapsed % audio.duration               // wrap cleanly
+                                   : elapsed;                               // fallback if duration unavailable
+                        } else {
+                            // First time ever tuning to this station during this session.
+                            // Drop somewhere *random* inside the track to mimic a real broadcast.
+                            target = Math.random() * (audio.duration || 30); // 0‑30 s fallback if duration unknown
+                            // Anchor the on‑air clock so next time we can compute elapsed accurately.
+                            state.startClock = Date.now() - target * 1000;
                         }
-                        audio.currentTime = target;
+
+                        audio.currentTime = target;   // jump to the computed position
+
+                        // Keep legacy fields in sync for other logic
+                        state.playhead = target;
                         state.lastSeen = Date.now();
 
                         if (shouldAutoplay) {
@@ -1018,10 +1030,6 @@
             // MODIFIED: seek function is now async and uses the new loadTrack signature
             async function seek(dir){
                 const wasPlaying = !audio.paused; // Store current playback state
-                
-                // Save playhead for the current station *before* changing stationIdx
-                stationStates[stationIdx].playhead = audio.currentTime;
-                stationStates[stationIdx].lastSeen  = Date.now();
                 
                 // Change to the new station index
                 stationIdx = (stationIdx + dir + stations.length) % stations.length;
