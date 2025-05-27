@@ -64,11 +64,11 @@
             margin: 0 auto;
             padding: 2rem;
         }
-        
-section {
-    padding: 40px 0;
-    min-height: 80vh; /* Ensure sections are substantial for scrolling */
-}
+
+        section {
+            padding: 40px 0;
+            min-height: 80vh; /* Ensure sections are substantial for scrolling */
+        }
 
         h1, h2, h3, .logo {
             color: var(--accent-color);
@@ -80,10 +80,6 @@ section {
             display:inline-block; width:45vw; max-width:600px; height:auto;
 
         }
-
-
-
-
 
         /* Generic Section Styling */
         .section-content {
@@ -170,20 +166,20 @@ section {
 
 
         /* Inline radio block */
-#radio-block{
-    margin-top:2rem;
-    background:var(--card-bg-color);
-    padding:1.5rem;
-    border-radius:var(--border-radius-xl);
-    box-shadow:var(--soft-shadow);
-}
-#radio-block .track-info{
-    font-size:0.9rem;
-    opacity:0.8;
-}
-#radio-audio{
-    display:none; /* Hidden controls for true radio feel */
-}
+        #radio-block{
+            margin-top:2rem;
+            background:var(--card-bg-color);
+            padding:1.5rem;
+            border-radius:var(--border-radius-xl);
+            box-shadow:var(--soft-shadow);
+        }
+        #radio-block .track-info{
+            font-size:0.9rem;
+            opacity:0.8;
+        }
+        #radio-audio{
+            display:none; /* Hidden controls for true radio feel */
+        }
 
         /* --- rAIdio inline controls --- */
         .radio-controls{
@@ -209,7 +205,7 @@ section {
         #play-pause.paused::after{content:'►';}
         #play-pause.playing::after{content:'❚❚';}
 
-        /* AM‑FM toggle */
+        /* AM‑FM toggle (removed from UI, but classes left for reference if needed elsewhere) */
         .switch{position:relative;display:inline-block;width:46px;height:24px;}
         .switch input{display:none;}
         .slider{
@@ -224,6 +220,33 @@ section {
         input:checked + .slider{background:var(--accent-color);}
         input:checked + .slider:before{transform:translateX(22px);}
 
+        /* New seek buttons */
+        .seek-button {
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .seek-button:hover {
+             background-image: var(--spectral-gradient);
+             color: white;
+        }
+
+        /* Animation for seeking effect on track title */
+        @keyframes seekFade {
+            0% { opacity: 1; transform: translateX(0); }
+            50% { opacity: 0; transform: translateX(0); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        #radio-current-track.seek-active {
+            animation: seekFade 0.3s ease-out;
+        }
+
         /* volume */
         #volume-slider{width:120px;}
 
@@ -232,7 +255,6 @@ section {
             opacity:0.7;
             user-select:none;
         }
-
 
         /* About / Contact */
         .tool-badges img {
@@ -247,12 +269,12 @@ section {
             margin: 5px; display: inline-block;
             border: 1px solid var(--accent-color);
         }
-.tool-badges h4{
-    margin:1.2rem 0 0.4rem;
-    font-size:0.95rem;
-    font-weight:700;
-    color:var(--accent-color);
-}
+        .tool-badges h4{
+            margin:1.2rem 0 0.4rem;
+            font-size:0.95rem;
+            font-weight:700;
+            color:var(--accent-color);
+        }
         .contact-links a {
             color: var(--accent-color);
             text-decoration: none;
@@ -265,7 +287,7 @@ section {
             background-clip: text;
             color: transparent;
         }
-        
+
         /* Footer */
         footer {
             text-align: center;
@@ -294,31 +316,31 @@ section {
         .col-12 { grid-column: span 12; }
         .col-6 { grid-column: span 6; }
         /* Add more col classes as needed for responsive designs if CSS Grid alone isn't sufficient for #portfolio-grid pattern */
-#landing-hero{
-    position:relative;width:100%;height:100vh;overflow:hidden;
-    display:flex;align-items:center;justify-content:center;
-}
-#sphere-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
-.landing-inner{
-    text-align:center;
-    position:relative;
-    z-index:5;
-    opacity:0;
-    animation:fadeIn 1s ease-out .3s forwards;
-}
-.landing-nav{
-    margin-top:0.15rem;      /* tighter spacing below logo */
-    display:flex;
-    gap:2rem;
-    justify-content:center;
-    flex-wrap:wrap;
-}
-.landing-link{color:var(--accent-color);font-family:var(--font-sans);font-weight:600;
-    text-decoration:none;font-size:1.25rem;transition:color .3s;
-    opacity:0;
-    animation:fadeIn .8s ease-out .6s forwards;
-}
-.landing-link:hover{color:#fff;}
+        #landing-hero{
+            position:relative;width:100%;height:100vh;overflow:hidden;
+            display:flex;align-items:center;justify-content:center;
+        }
+        #sphere-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+        .landing-inner{
+            text-align:center;
+            position:relative;
+            z-index:5;
+            opacity:0;
+            animation:fadeIn 1s ease-out .3s forwards;
+        }
+        .landing-nav{
+            margin-top:0.15rem;      /* tighter spacing below logo */
+            display:flex;
+            gap:2rem;
+            justify-content:center;
+            flex-wrap:wrap;
+        }
+        .landing-link{color:var(--accent-color);font-family:var(--font-sans);font-weight:600;
+            text-decoration:none;font-size:1.25rem;transition:color .3s;
+            opacity:0;
+            animation:fadeIn .8s ease-out .6s forwards;
+        }
+        .landing-link:hover{color:#fff;}
         section:not(#landing-hero){scroll-margin-top:80px;}
 
         /* Portfolio reveal animation */
@@ -334,26 +356,26 @@ section {
           .portfolio-intro {font-size:.9rem; text-align:center;}
         }
 
-        
+
         /* Lightbox */
-#lightbox{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.8);
-    display:flex; align-items:center; justify-content:center;
-    visibility:hidden; opacity:0; transition:opacity .3s ease;
-    z-index:200;
-}
-#lightbox.visible{visibility:visible; opacity:1;}
-#lightbox-content{width:90vw; max-width:1280px; aspect-ratio:16/9; max-height:90vh;}
-#lightbox-content iframe{width:100%; height:100%; border:none;}
-#lightbox-close{
-    position:absolute; top:20px;  right:30px;
-    font-size:2rem; color:#fff; cursor:pointer; user-select:none;
-}
-@keyframes fadeIn{
-    from{opacity:0;}
-    to  {opacity:1;}
-}
+        #lightbox{
+            position:fixed; inset:0;
+            background:rgba(0,0,0,.8);
+            display:flex; align-items:center; justify-content:center;
+            visibility:hidden; opacity:0; transition:opacity .3s ease;
+            z-index:200;
+        }
+        #lightbox.visible{visibility:visible; opacity:1;}
+        #lightbox-content{width:90vw; max-width:1280px; aspect-ratio:16/9; max-height:90vh;}
+        #lightbox-content iframe{width:100%; height:100%; border:none;}
+        #lightbox-close{
+            position:absolute; top:20px;  right:30px;
+            font-size:2rem; color:#fff; cursor:pointer; user-select:none;
+        }
+        @keyframes fadeIn{
+            from{opacity:0;}
+            to  {opacity:1;}
+        }
     </style>
 </head>
 <body>
@@ -369,14 +391,14 @@ section {
                  class="logo" />
             <nav class="landing-nav">
                 <a href="#portfolio" class="landing-link">Editorial</a>
-                <a href="#lab" class="landing-link">Generative&nbsp;AI</a>
+                <a href="#lab" class="landing-link">Generative AI</a>
                 <a href="#contact-section" class="landing-link">Contact</a>
             </nav>
         </div>
     </section>
 
-    
-    
+
+
     <main>
         <div id="now-clock-section"></div> <!-- Dummy anchor for "Now" hex nav item -->
 
@@ -404,33 +426,31 @@ section {
                     <!-- OrbitControls will attach here -->
                 </div>
                 <!-- Obscura rAIdio (now inline) -->
-<div id="radio-block">
-    <h3>Obscura rAIdio</h3>
-    <p class="radio-description">
-        Sounds for the liminal space. This is a true radio stream—you can’t skip, pause, or rewind; just drop in and vibe.
-    </p>
-    <p class="track-info">
-        Now playing: <span id="radio-current-track">Loading…</span>
-    </p>
+                <div id="radio-block">
+                    <h3>Obscura rAIdio</h3>
+                    <p class="radio-description">
+                        Sounds for the liminal space. Tune in to explore frequencies beyond.
+                    </p>
+                    <p class="track-info">
+                        Tuning: <span id="radio-current-track">Searching…</span>
+                    </p>
 
-    <div class="radio-controls">
-        <!-- Play / Pause -->
-        <button id="play-pause" aria-label="Play or Pause"></button>
+                    <div class="radio-controls">
+                        <!-- Play / Pause -->
+                        <button id="play-pause" aria-label="Play or Pause"></button>
 
-        <!-- AM / FM toggle -->
-        <label class="switch" aria-label="Toggle AM / FM playlist">
-            <input type="checkbox" id="playlist-switch">
-            <span class="slider round"></span>
-        </label>
-        <span id="band-label">AM</span>
+                        <!-- Seek Buttons -->
+                        <button id="seek-left" class="seek-button" aria-label="Seek previous station">◀◀</button>
+                        <span id="band-label"></span> <!-- This will display current frequency/station name -->
+                        <button id="seek-right" class="seek-button" aria-label="Seek next station">▶▶</button>
 
-        <!-- Volume -->
-        <label for="volume-slider" class="vol-label">Volume</label>
-        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" aria-label="Volume">
-    </div>
+                        <!-- Volume -->
+                        <label for="volume-slider" class="vol-label">Volume</label>
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" aria-label="Volume">
+                    </div>
 
-    <audio id="radio-audio" preload="metadata"></audio>
-</div>
+                    <audio id="radio-audio" preload="metadata"></audio>
+                </div>
             </div>
         </section>
 
@@ -441,7 +461,7 @@ section {
                 <!-- TODO: Real bio copy in About -->
                 <p>Obscura Creative Inc. explores the intersection of light, perception, and digital artistry. We specialize in cutting-edge video editing, AI-driven content pipelines, and immersive web experiences.</p>
                 <p>We believe in the power of sacred geometry, the magic of optics, and the endless flow of time as inspirations for transformative digital art.</p>
-                
+
                 <div id="contact-section"> <!-- Combined About/Contact -->
                     <h3>Connect</h3>
                     <p class="contact-links">
@@ -455,11 +475,11 @@ section {
 
                 <h3>Tools We Love</h3>
                 <div class="tool-badges">
-                    <h4>Video&nbsp;&amp;&nbsp;Streaming</h4>
+                    <h4>Video & Streaming</h4>
                     <span>OBS</span>
                     <span>Premiere</span>
-                    <span>After&nbsp;Effects</span>
-                    <h4>AI&nbsp;Creative</h4>
+                    <span>After Effects</span>
+                    <h4>AI Creative</h4>
                     <span>ChatGPT</span>
                     <span>Gemini</span>
                     <span>Midjourney</span>
@@ -467,12 +487,12 @@ section {
                     <span>Firefly</span>
                     <span>RunwayML</span>
                     <span>Suno</span>
-                    <h4>3D&nbsp;&amp;&nbsp;Interactive</h4>
+                    <h4>3D & Interactive</h4>
                     <span>Unity</span>
                     <span>Blender</span>
-                    <span>Luma&nbsp;AI</span>
+                    <span>Luma AI</span>
                     <span>BambuStudio</span>
-                    <h4>Imaging&nbsp;&amp;&nbsp;Design</h4>
+                    <h4>Imaging & Design</h4>
                     <span>Photoshop</span>
                     <span>Illustrator</span>
                     <span>Lightroom</span>
@@ -488,7 +508,7 @@ section {
     <!-- Lightbox modal -->
     <div id="lightbox" aria-hidden="true">
         <div id="lightbox-content"></div>
-        <span id="lightbox-close" aria-label="Close lightbox">&times;</span>
+        <span id="lightbox-close" aria-label="Close lightbox">×</span>
     </div>
 
     <script type="module">
@@ -561,10 +581,10 @@ section {
                     }
                 }, 50);
             });
-            
+
             initNav();
             initPortfolio();
-            initRadio();
+            initRadio(); // Call the updated initRadio
             initFooterEasterEgg();
 
             // Defer Three.js loading further if possible, or load it now for components that need them.
@@ -576,7 +596,7 @@ section {
             const threeModule = await import(THREE_PATH);
             Three = threeModule; // Three should contain Scene, PerspectiveCamera etc.
 
-            if (document.getElementById('hero-canvas')) initHeroCanvas();
+            if (document.getElementById('sphere-canvas')) initHeroCanvas(); // Corrected element ID for hero canvas
             if (document.getElementById('lab')) initAILab();
         }
 
@@ -773,13 +793,13 @@ section {
 
         // --- GENERATIVE AI LAB ---
         let labScene, labCamera, labRenderer, labControls, GLTFLoader, USDZLoader, OrbitControls, DRACOLoader, dracoLoader;
-        
+
         async function initAILab() {
             const modelViewerCanvas = document.getElementById('model-viewer-canvas');
             if (!modelViewerCanvas) return;
 
             // Dynamically import Three.js extras if not already loaded for Hero
-            if (!Three) { 
+            if (!Three) {
                 Three = await import(THREE_PATH);
             }
             const gltfLoaderModule = await import(GLTFLOADER_PATH);
@@ -801,7 +821,7 @@ section {
             labRenderer = new Three.WebGLRenderer({ canvas: modelViewerCanvas, antialias: true });
             labRenderer.setSize(modelViewerCanvas.clientWidth, modelViewerCanvas.clientHeight);
             labRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            
+
             const ambientLight = new Three.AmbientLight(0xffffff, 0.5);
             labScene.add(ambientLight);
             const directionalLight = new Three.DirectionalLight(0xffffff, 0.8);
@@ -810,7 +830,7 @@ section {
 
             labControls = new OrbitControls(labCamera, labRenderer.domElement);
             labControls.enableDamping = true;
-            
+
             function animateLab() {
                 requestAnimationFrame(animateLab);
                 labControls.update();
@@ -835,7 +855,7 @@ section {
                 }
             });
         }
-        
+
         let currentLoadedModel = null;
         function clearLabScene() {
             if (currentLoadedModel) {
@@ -845,7 +865,7 @@ section {
             }
         }
 
-        
+
         function loadModelFromURL(url, isObjectURL = false) {
             clearLabScene();
 
@@ -899,151 +919,131 @@ section {
             labControls.update();
         }
 
-        // --- OBSCURA rAIDIO ---
+        // --- UPDATED OBSCURA rAIDIO ---
         function initRadio() {
-            const audio   = document.getElementById('radio-audio');
-            const titleEl = document.getElementById('radio-current-track');
-            const playBtn = document.getElementById('play-pause');
-            const toggle  = document.getElementById('playlist-switch');
-            const bandLbl = document.getElementById('band-label');
-            const volSl   = document.getElementById('volume-slider');
-            if(!audio || !titleEl || !playBtn || !toggle || !bandLbl || !volSl) return;
+            const audio      = document.getElementById('radio-audio');
+            const titleEl    = document.getElementById('radio-current-track');
+            const playBtn    = document.getElementById('play-pause');
+            const seekLeftBtn= document.getElementById('seek-left');
+            const seekRightBtn= document.getElementById('seek-right');
+            const bandLbl    = document.getElementById('band-label');
+            const volSl      = document.getElementById('volume-slider');
 
-            /* Playlists */
-            const AM = [
-                { title:'NotebookLM Podcast', url:'/audio/am/NotebookLM-Podcast.mp3' }
-            ];
+            if (!audio || !titleEl || !playBtn || !seekLeftBtn || !seekRightBtn || !bandLbl || !volSl) return;
 
-            /* Two music stations */
-            const FM1 = [
-                { title:'All Of My Bins',        url:'/audio/fm01/All-Of-My-Bins.mp3' },
-                { title:'FatRatʼs Saga',         url:'/audio/fm01/FatRats-Saga.mp3' },
-                { title:'Make the Website',      url:'/audio/fm01/Make-the-Website.mp3' },
-                { title:'Out Exploring',         url:'/audio/fm01/Out-Exploring.mp3' },
-                { title:'Slop Slop Slop',        url:'/audio/fm01/Slop-Slop-Slop.mp3' },
-                { title:'Squallʼs AI Ghul',      url:'/audio/fm01/Squalls-AI-Ghul.mp3' },
-                { title:'Tell Me',               url:'/audio/fm01/Tell-Me.mp3' },
-                { title:'Wizard of Moscow',      url:'/audio/fm01/Wizard-of-Moscow.mp3' }
-            ];
-            const FM2 = [
-                { title:'Distracted by Skeletons', url:'/audio/fm02/Distracted-by-Skeletons.mp3' },
-                { title:'Fractals',                url:'/audio/fm02/Fractals.mp3' },
-                { title:'Good Game!',              url:'/audio/fm02/Good-Game.mp3' },
-                { title:'Missing You (Cover)',     url:'/audio/fm02/Missing-You.mp3' },
-                { title:'Obscura Sonnet',          url:'/audio/fm02/Obscura-Sonnet.mp3' },
-                { title:'Prism',                   url:'/audio/fm02/Prism.mp3' },
-                { title:'Puppet',                  url:'/audio/fm02/Puppet.mp3' },
-                { title:'Quiet Anvil',             url:'/audio/fm02/Quiet-Anvil.mp3' },
-                { title:'Too Far Apart',           url:'/audio/fm02/Too-Far-Apart.mp3' },
-                { title:'Why Do You Look Like a Dragon', url:'/audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3' }
-            ];
+            // Combined list of channels (AM, FM, Ads, Noise)
+            const channels = [
+                // Noise Channels (for more realistic seeking, if audio files for static exist)
+                { frequency: '87.9', type: 'NOISE', title: 'Static Noise', url: '' }, // Placeholder, can point to a static.mp3
+                { frequency: '88.1', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '88.3', type: 'AM',    title: 'NotebookLM Podcast', url: '/audio/am/NotebookLM-Podcast.mp3' },
+                { frequency: '88.5', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '90.7', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '92.3', type: 'AD',    title: 'Ad Spot 01', url: '/audio/ads/Ad01.mp3' },
+                { frequency: '93.0', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '95.8', type: 'FM',    title: 'All Of My Bins', url: '/audio/fm01/All-Of-My-Bins.mp3' },
+                { frequency: '96.2', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '97.5', type: 'AD',    title: 'Ad Spot 02', url: '/audio/ads/Ad02.mp3' },
+                { frequency: '98.9', type: 'FM',    title: 'Obscura Sonnet', url: '/audio/fm02/Obscura-Sonnet.mp3' },
+                { frequency: '99.1', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '100.5', type: 'FM',    title: 'FatRatʼs Saga', url: '/audio/fm01/FatRats-Saga.mp3' },
+                { frequency: '101.2', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '102.7', type: 'FM',    title: 'Distracted by Skeletons', url: '/audio/fm02/Distracted-by-Skeletons.mp3' },
+                { frequency: '103.1', type: 'FM',    title: 'Make the Website', url: '/audio/fm01/Make-the-Website.mp3' },
+                { frequency: '103.5', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '104.9', type: 'AD',    title: 'Ad Spot 03', url: '/audio/ads/Ad03.mp3' },
+                { frequency: '105.0', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '106.3', type: 'FM',    title: 'Too Far Apart', url: '/audio/fm02/Too-Far-Apart.mp3' },
+                { frequency: '107.5', type: 'NOISE', title: 'Static Noise', url: '' },
+                { frequency: '108.0', type: 'FM',    title: 'Why Do You Look Like a Dragon', url: '/audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3' },
 
-            /* Ad bumpers (rotate) */
-            const ADS = [
-                { title:'Ad Spot 01', url:'/audio/ads/Ad01.mp3' },
-                { title:'Ad Spot 02', url:'/audio/ads/Ad02.mp3' },
-                { title:'Ad Spot 03', url:'/audio/ads/Ad03.mp3' }
-            ];
+            ].sort((a,b) => parseFloat(a.frequency) - parseFloat(b.frequency)); // Ensure channels are sorted by frequency
 
-            /* Station display names */
-            const stationNames = {
-                AM  : '88.3 Talk Radio',
-                FM1 : '103.1 Madness FM',
-                FM2 : '98.9 Uncanny FM'
-            };
+            let currentChannelIndex = 0; // Start at the first channel
 
-            // --- New radio sequencing logic: song → ad → next song ---
-            let currentBand = 'AM';       // 'AM' | 'FM1' | 'FM2'
-            let list        = AM;         // active song playlist (without ads)
-            let idx         = 0;          // index within list
-            let playingAd   = false;      // currently an ad?
-            let adIndex     = 0;          // rotate through ADS array
-
-            function load() {
-                const isFM = (currentBand === 'FM1' || currentBand === 'FM2');
-
-                // --- Decide what to queue next ---
-                if (playingAd) {
-                    // Just finished an ad → queue the next song
-                    playingAd = false;
-                    idx = (idx + 1) % list.length;
-                } else if (isFM) {
-                    // Finished a song on FM → queue an ad next
-                    playingAd = true;
-                }
-
-                // --- Select track object ---
-                let track;
-                if (playingAd) {
-                    track = ADS[adIndex % ADS.length];
-                    adIndex++;
-                    titleEl.textContent = `Advertisement – ${track.title}`;
-                } else {
-                    track = list[idx];
-                    titleEl.textContent = track.title;
-                }
-
-                // --- Set source & pseudo‑live offset ---
-                audio.src = track.url;
-                audio.onloadedmetadata = () => {
-                    if (!playingAd && audio.duration && !isNaN(audio.duration)) {
-                        const offset = (Date.now() / 1000) % audio.duration;
-                        audio.currentTime = offset;
-                    }
-                };
+            function updateDisplay(channel) {
+                bandLbl.textContent = channel.frequency + ' MHz'; // Or kHz for AM if you prefer
+                titleEl.textContent = channel.title;
             }
 
-            /* Play / pause button (unchanged) */
-            playBtn.classList.add('paused');
-            playBtn.addEventListener('click', ()=>{
-                if(audio.paused){
-                    audio.play();
-                    playBtn.classList.replace('paused','playing');
-                }else{
+            function loadChannel(index, seekAction = false) {
+                const channel = channels[index];
+
+                if (seekAction) {
+                    titleEl.textContent = 'Searching...';
+                    titleEl.classList.add('seek-active');
+                    // Remove class after animation to allow it to re-trigger
+                    titleEl.addEventListener('animationend', () => {
+                        titleEl.classList.remove('seek-active');
+                        updateDisplay(channel);
+                    }, { once: true });
+                } else {
+                    updateDisplay(channel);
+                }
+
+
+                if (channel.url) {
+                    audio.src = channel.url;
+                    audio.onloadedmetadata = () => {
+                        // For non-ad music, use pseudo-live offset
+                        if (channel.type !== 'AD' && channel.type !== 'NOISE' && audio.duration && !isNaN(audio.duration)) {
+                            const offset = (Date.now() / 1000) % audio.duration;
+                            audio.currentTime = offset;
+                        } else {
+                            audio.currentTime = 0; // Start from beginning for ads/noise
+                        }
+                    };
+                    if (playBtn.classList.contains('playing')) {
+                         audio.play().catch(e => console.warn("Autoplay prevented:", e));
+                    }
+                } else {
+                    // Handle noise channels or empty URLs (e.g., stop audio)
                     audio.pause();
-                    playBtn.classList.replace('playing','paused');
+                    audio.src = ''; // Clear source
+                    titleEl.textContent = channel.title; // Directly set if not doing seek animation
+                }
+            }
+
+            function seek(direction) {
+                currentChannelIndex += direction;
+                if (currentChannelIndex < 0) {
+                    currentChannelIndex = channels.length - 1; // Wrap around to end
+                } else if (currentChannelIndex >= channels.length) {
+                    currentChannelIndex = 0; // Wrap around to beginning
+                }
+                loadChannel(currentChannelIndex, true); // True indicates a seek action
+                if (!audio.paused) {
+                    audio.play().catch(e => console.warn("Autoplay prevented during seek:", e));
+                }
+            }
+
+            /* Play / pause button */
+            playBtn.classList.add('paused');
+            playBtn.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play().catch(e => console.warn("Autoplay prevented:", e));
+                    playBtn.classList.replace('paused', 'playing');
+                } else {
+                    audio.pause();
+                    playBtn.classList.replace('playing', 'paused');
                 }
             });
 
-            volSl.addEventListener('input', ()=>{ audio.volume = volSl.valueAsNumber; });
+            volSl.addEventListener('input', () => { audio.volume = volSl.valueAsNumber; });
 
-            toggle.addEventListener('change', ()=>{
-                if (toggle.checked){               // FM
-                    currentBand = (currentBand === 'FM1') ? 'FM2' : 'FM1'; // flip stations
-                    list        = currentBand === 'FM1' ? FM1 : FM2;
-                    bandLbl.textContent = stationNames[currentBand];
-                } else {                           // AM
-                    currentBand = 'AM';
-                    list        = AM;
-                    bandLbl.textContent = stationNames[currentBand];
-                }
-                idx = 0; playingAd = false;        // reset
-                load();                            // start at current song
-                if(playBtn.classList.contains('playing')) audio.play();
-            });
+            seekLeftBtn.addEventListener('click', () => seek(-1));
+            seekRightBtn.addEventListener('click', () => seek(1));
 
-            // Click the band label to switch between FM1 ↔ FM2 while FM is active
-            bandLbl.style.cursor = 'pointer';
-            bandLbl.addEventListener('click', () => {
-                if (!toggle.checked) return; // Only when FM band active
-                currentBand = currentBand === 'FM1' ? 'FM2' : 'FM1';
-                list        = currentBand === 'FM1' ? FM1 : FM2;
-                bandLbl.textContent = stationNames[currentBand];
-                idx = 0; playingAd = false;
-                load();
-                if (!audio.paused) audio.play();
-            });
-
+            // Auto-seek to next channel when current track ends
             audio.addEventListener('ended', () => {
-                load();
-                audio.play();
+                // If it was an ad, and not the last channel, advance to next channel, otherwise just advance normally.
+                // For simplicity, just advance one step and loop.
+                seek(1);
             });
 
-            /* init */
+            /* Init */
             audio.volume = volSl.valueAsNumber;
-            playingAd = false; // start with music, not ad
-            load();
-            bandLbl.textContent = stationNames[currentBand];
+            loadChannel(currentChannelIndex); // Load the initial channel
         }
 
         // --- FOOTER EASTER EGG ---
