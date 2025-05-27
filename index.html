@@ -681,42 +681,35 @@
                 history.replaceState(null, '', location.pathname + location.search);
             }
             window.scrollTo(0, 0);
-            // Dynamically import heavy libraries
-            [
-                { name: 'Anime', path: ANIME_PATH, isDefault: true },
-                { name: 'Dayjs', path: DAYJS_PATH, isWindow: true, globalName: 'dayjs' }
-            ].forEach(async (lib) => {
-                if (lib.isWindow) { // For libs like Dayjs min that attach to window
-                    await import(lib.path);
-                    if (lib.globalName === 'dayjs') {
-                        Dayjs = window.dayjs;
-                        await import(DAYJS_UTC_PATH); // Ensure this loads and registers plugin
-                        await import(DAYJS_TZ_PATH);  // Ensure this loads and registers plugin
-                        Dayjs.extend(window.dayjs_plugin_utc);
-                        Dayjs.extend(window.dayjs_plugin_timezone);
-                    } else {
-                        window[lib.name] = window[lib.globalName];
-                    }
-                } else if (lib.isDefault) {
-                    const module = await import(lib.path);
-                    window[lib.name] = module.default;
-                } else {
-                    window[lib.name] = await import(lib.path);
-                }
-                if (lib.name === 'Anime') Anime = window.Anime;
-            });
 
+            const importPromises = [];
 
-            // Wait for Dayjs and Anime.js to be available for critical UI elements
-            await new Promise(resolve => {
-                const interval = setInterval(() => {
-                    if (typeof Dayjs !== 'undefined' && typeof Anime !== 'undefined' && typeof Dayjs.tz !== 'undefined') {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 50);
-            });
+            // Anime.js import
+            importPromises.push(import(ANIME_PATH).then(module => {
+                Anime = module.default;
+                window.Anime = module.default; // Assign to global window for consistency/older code
+            }));
 
+            // Dayjs and its plugins imports
+            importPromises.push(import(DAYJS_PATH).then(() => {
+                Dayjs = window.dayjs; // Dayjs attaches itself to window.dayjs
+                return Promise.all([
+                    import(DAYJS_UTC_PATH),
+                    import(DAYJS_TZ_PATH)
+                ]);
+            }).then(() => {
+                // Extend Dayjs with plugins after both plugin modules are loaded
+                Dayjs.extend(window.dayjs_plugin_utc);
+                Dayjs.extend(window.dayjs_plugin_timezone);
+            }).catch(error => {
+                console.error("Failed to load Dayjs or its plugins:", error);
+                // Optionally handle this error more gracefully, e.g., disable clock features
+            }));
+
+            // Wait for all import promises to resolve
+            await Promise.all(importPromises);
+
+            // Now that all libraries are guaranteed to be loaded and set up
             initNav();
             initPortfolio();
             initRadio();
@@ -927,7 +920,7 @@
                         updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
                     }
 
-                    // Remove previous loadedmetadata listener to prevent multiple triggers
+                    // Remove previous loadedmetadata and error listeners to prevent multiple triggers
                     audio.removeEventListener('loadedmetadata', onLoadedMetadataHandler);
                     audio.removeEventListener('error', onErrorHandler);
 
@@ -960,7 +953,7 @@
 
                     // Handler for audio loading errors
                     const onErrorHandler = () => {
-                        console.error(`Error loading audio for ${track.url}`);
+                        console.error(`Error loading audio for ${track.url}. Please check the file path and availability.`);
                         audio.removeEventListener('error', onErrorHandler);
                         // Ensure it's paused and resolve on error
                         audio.pause();
@@ -1048,7 +1041,8 @@
             /* Init */
             audio.volume = volSl.valueAsNumber;
             // Initial load of the first station. It should start paused.
-            loadTrack(false, false); 
+            // We await it to ensure the initial track metadata is loaded before any user interaction.
+            await loadTrack(false, false); 
         }
 
         // --- FOOTER EASTER EGG ---
