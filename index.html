@@ -145,7 +145,7 @@
             text-align: center;
         }
         #radio-block{
-            /* Removed background-color, border-radius, box-shadow to achieve single bounding box */
+            /* Removed background-color, border-radius, box-shadow to achieve single bounding box (done by .section-content) */
             padding: 1.5rem;
             margin-top: 1rem;
             width: 100%;
@@ -184,12 +184,12 @@
 
         #radio-display {
             white-space: nowrap; /* Prevent text wrapping */
-            font-family: var(--font-display); /* Monospaced font */
+            font-family: var(--font-display); /* Monospaced font for LCD look */
             color: var(--card-bg-color); /* Brand white */
-            font-size: 1.2em;
+            font-size: 1.6em; /* Increased font size */
             position: absolute;
             left: 0;
-            animation: none;
+            animation: none; /* Controlled by JS */
         }
 
         /* Animation for seeking effect on display text */
@@ -218,14 +218,13 @@
 
         .radio-component {
             display: flex;
-            flex-direction: column; /* Default to column for easier label placement */
+            flex-direction: column;
             align-items: center;
         }
 
         .dial-label {
             font-weight: 600;
             user-select: none;
-            margin-top: 0.5rem; /* Space between dial and label */
             color: var(--accent-color);
             font-size: 0.9em;
         }
@@ -240,8 +239,8 @@
             flex-direction: column-reverse; /* Puts label below input */
         }
         .volume-component .dial-label {
-             margin-top: 0; /* Reset previous margin-top */
-             margin-bottom: 0.5rem; /* Space between label and input */
+             margin-top: 0.5rem; /* Space between dial and label */
+             margin-bottom: 0; /* Ensures no extra space below label */
         }
 
 
@@ -354,7 +353,7 @@
         }
         @keyframes dialTurn {
             0%   { transform: rotate(0deg); }
-            50%  { transform: rotate(90deg); }
+            50%  { transform: rotate(90deg); } /* Rotates fully in the middle of animation */
             100% { transform: rotate(0deg); }
         }
 
@@ -386,13 +385,13 @@
         .tool-badges span:hover {
             background-color: var(--accent-color);
             color: white;
-            border-color: var(--accent-color); /* Maintain border visibility */
+            border-color: var(--accent-color);
         }
 
         /* Changed h4 to h3 for proper section heading */
         .tool-badges h3{ /* Updated selector */
             margin:1.2rem 0 0.4rem;
-            font-size:1.15rem; /* Slightly larger than before to be more like a sub-heading */
+            font-size:1.15rem;
             font-weight:700;
             color:var(--accent-color);
         }
@@ -879,8 +878,8 @@
                     frequency: '88.3 AM',
                     type: 'AM',
                     playlist: [{ title: 'NotebookLM Podcast', url: '/audio/am/NotebookLM-Podcast.mp3', duration: 1800 }], // 30 minutes
-                    streamHistory: [], // Will be computed for AM as well, effectively one track
-                    cycleDuration: 0,
+                    streamTimeline: [], // Computed on init, maps sequence
+                    lastKnownTrackIndex: 0, // Last track played from this station's sequence
                 },
                 {
                     name: 'Madness FM',
@@ -896,9 +895,9 @@
                         { title:'Tell Me', url:'/audio/fm01/Tell-Me.mp3', duration: 160 },
                         { title:'Wizard of Moscow', url:'/audio/fm01/Wizard-of-Moscow.mp3', duration: 220 }
                     ]),
-                    adPlaylist: shuffleArray([...ADS]),
-                    streamHistory: [],
-                    cycleDuration: 0,
+                    adPlaylist: shuffleArray([...ADS]), // Deep copy & shuffle for independence
+                    streamTimeline: [],
+                    lastKnownTrackIndex: 0,
                 },
                 {
                     name: 'Unhinged FM',
@@ -916,139 +915,164 @@
                         { title:'Too Far Apart', url:'/audio/fm02/Too-Far-Apart.mp3', duration: 155 },
                         { title:'Why Do You Look Like a Dragon', url:'/audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3', duration: 240 }
                     ]),
-                    adPlaylist: shuffleArray([...ADS]),
-                    streamHistory: [],
-                    cycleDuration: 0,
+                    adPlaylist: shuffleArray([...ADS]), // Deep copy & shuffle
+                    streamTimeline: [],
+                    lastKnownTrackIndex: 0,
                 }
             ];
 
-            // Pre-compute stream history for each station
+            // --- Stream Pre-computation ---
+            // This builds a complete, cyclical sequence of songs/ads for each FM station
             stations.forEach(station => {
-                let currentAccumulatedDuration = 0;
+                let currentTotalDuration = 0;
+                station.streamTimeline = []; // Reset for clarity on rebuild
+
                 if (station.type === 'AM') {
-                    const track = station.playlist[0];
-                    station.streamHistory.push({
-                        track: track,
+                    const track = station.playlist[0]; // AM just has one track
+                    station.streamTimeline.push({
+                        item: track,
                         start: 0,
-                        end: track.duration,
+                        duration: track.duration,
                         isAd: false
                     });
-                    currentAccumulatedDuration = track.duration;
-                } else { // FM stations: interleave songs and ads
-                    const maxLength = Math.max(station.playlist.length, station.adPlaylist.length);
-                    for (let i = 0; i < maxLength; i++) {
-                        if (i < station.playlist.length) {
-                            const song = station.playlist[i];
-                            station.streamHistory.push({
-                                track: song,
-                                start: currentAccumulatedDuration,
-                                end: currentAccumulatedDuration + song.duration,
-                                isAd: false
-                            });
-                            currentAccumulatedDuration += song.duration;
-                        }
-                        if (i < station.adPlaylist.length) {
-                            const ad = station.adPlaylist[i];
-                            station.streamHistory.push({
-                                track: ad,
-                                start: currentAccumulatedDuration,
-                                end: currentAccumulatedDuration + ad.duration,
-                                isAd: true
-                            });
-                            currentAccumulatedDuration += ad.duration;
-                        }
+                    // AM acts as if its cycle is infinite, but we'll use its duration for direct seek calculation.
+                    station.cycleDuration = track.duration;
+                } else { // FM stations: Interleave songs and ads
+                    // Ensure playlists are at least as long as each other by cycling content if needed
+                    const longestPlaylistLength = Math.max(station.playlist.length, station.adPlaylist.length);
+
+                    for (let i = 0; i < longestPlaylistLength; i++) {
+                        const song = station.playlist[i % station.playlist.length]; // Cycle songs if ad list is longer
+                        station.streamTimeline.push({
+                            item: song,
+                            start: currentTotalDuration,
+                            duration: song.duration,
+                            isAd: false
+                        });
+                        currentTotalDuration += song.duration;
+
+                        const ad = station.adPlaylist[i % station.adPlaylist.length]; // Cycle ads if song list is longer
+                        station.streamTimeline.push({
+                            item: ad,
+                            start: currentTotalDuration,
+                            duration: ad.duration,
+                            isAd: true
+                        });
+                        currentTotalDuration += ad.duration;
                     }
+                    station.cycleDuration = currentTotalDuration;
                 }
-                station.cycleDuration = currentAccumulatedDuration;
             });
 
+
             let currentStationIndex = 0;
-            let scrollAnimationId; // To control requestAnimationFrame for scrolling text
+            let scrollAnimationFrameId; // To control requestAnimationFrame for scrolling text
 
-            // Function to start and manage the scrolling text
-            function startScrolling(element, text) {
-                cancelAnimationFrame(scrollAnimationId); // Stop any existing animation
-                
-                // Add a buffer of spaces to make the loop look natural.
-                // Using zero-width space + normal space for better control without changing font.
-                const buffer = '        '; // A few spaces for separation
-                element.innerHTML = text + buffer + text; // Duplicate text with buffer
-                element.style.transform = 'translateX(0)'; // Reset position
+            // Function to manage the scrolling display
+            function updateScrollingDisplay(text, seekActive = false) {
+                cancelAnimationFrame(scrollAnimationFrameId); // Stop any ongoing scroll animation
 
-                // Set a timeout to allow the browser to render the content and determine scrollWidth
-                setTimeout(() => {
-                    const containerWidth = element.parentElement.clientWidth;
-                    const contentWidth = element.scrollWidth / 2; // Width of one instance of the duplicated content
+                radioDisplay.classList.toggle('seek-active', seekActive);
 
-                    if (contentWidth > containerWidth) { // Only scroll if content is wider than container
-                        let currentPos = 0;
-                        const scrollSpeed = 0.5; // pixels per frame
-
-                        function animate() {
-                            currentPos -= scrollSpeed;
-                            // Reset position when the first copy (plus buffer) has scrolled past the left edge
-                            if (currentPos <= -(contentWidth + (buffer.length * element.clientWidth / text.length))) { // Adjust based on character width
-                                currentPos = 0; // Reset to start of first copy
-                            }
-                            element.style.transform = `translateX(${currentPos}px)`;
-                            scrollAnimationId = requestAnimationFrame(animate);
-                        }
-                        scrollAnimationId = requestAnimationFrame(animate);
-                    } else {
-                        element.style.transform = 'translateX(0)';
-                        element.innerHTML = text; // If no scrolling, just show the single text without duplication
-                    }
-                }, 50); // Small delay to ensure accurate scrollWidth calculation
-            }
-
-            function updateDisplay(station, track, seekAction = false) {
-                const fullDisplayString = `${station.frequency} ${station.name}: ${track.title}`;
-                bandLbl.textContent = "FREQ"; // Permanent label for the dial
-
-                if (seekAction) {
-                    radioDisplay.textContent = 'SEEKING...'; // Show seeking message
-                    cancelAnimationFrame(scrollAnimationId); // Stop current scroll
+                if (seekActive) {
+                    radioDisplay.textContent = 'SEEKING...';
                     radioDisplay.style.transform = 'translateX(0)'; // Reset position
-                    radioDisplay.classList.add('seek-active');
-                    
                     radioDisplay.addEventListener('animationend', function handler() {
                         radioDisplay.classList.remove('seek-active');
-                        startScrolling(radioDisplay, fullDisplayString); // Start new scrolling for new track
-                        this.removeEventListener('animationend', handler); // Clean up
+                        startContinuousScrolling(radioDisplay, text);
+                        this.removeEventListener('animationend', handler);
                     }, { once: true });
                 } else {
-                    startScrolling(radioDisplay, fullDisplayString); // Start scrolling immediately
+                    startContinuousScrolling(radioDisplay, text);
                 }
             }
 
-            function playCurrentTrackOfStation(station, seekAction = false) {
+            function startContinuousScrolling(element, originalText) {
+                cancelAnimationFrame(scrollAnimationFrameId);
+                element.style.transform = 'translateX(0)'; // Reset initial position
+
+                // Add padding spaces to the text to ensure visible gap before repetition
+                const paddedText = originalText + '         '; // 9 spaces
+                element.innerHTML = paddedText + paddedText; // Duplicate for seamless looping
+
+                setTimeout(() => { // Allow DOM to render for accurate scrollWidth
+                    const containerWidth = element.parentElement.clientWidth - (parseFloat(getComputedStyle(element.parentElement).paddingLeft) * 2);
+                    const singleTextWidth = element.scrollWidth / 2; // Width of one padded text instance
+
+                    if (singleTextWidth <= containerWidth && !prefersReducedMotion) {
+                        // If text fits, but still want a 'scroll' feel
+                        // Make it subtly scroll slowly or reset to show full text.
+                        element.style.transform = 'translateX(0)';
+                        element.innerHTML = originalText; // Revert to single text
+                        // You could add a subtle slow scroll here if needed, or simply static for fit
+                        return;
+                    } else if (prefersReducedMotion) {
+                        // Just show static text if reduced motion is preferred
+                        element.style.transform = 'translateX(0)';
+                        element.innerHTML = originalText;
+                        return;
+                    }
+
+
+                    let currentPosition = 0;
+                    const scrollSpeed = 0.5; // pixels per frame
+
+                    function animateScroll() {
+                        currentPosition -= scrollSpeed;
+                        // When the first full copy has scrolled off the left edge, reset to start.
+                        if (currentPosition <= -singleTextWidth) {
+                            currentPosition = 0;
+                        }
+                        element.style.transform = `translateX(${currentPosition}px)`;
+                        scrollAnimationFrameId = requestAnimationFrame(animateScroll);
+                    }
+                    scrollAnimationFrameId = requestAnimationFrame(animateScroll);
+                }, 50); // Small delay
+            }
+
+
+            // This function now calculates the "current live moment" in the stream and plays it
+            function tuneToStation(station, isSeekAction = false) {
                 const nowInSeconds = Date.now() / 1000;
-                const streamPositionInCycle = nowInSeconds % station.cycleDuration;
+                let playDuration = station.cycleDuration;
+                if (station.type === 'AM') { // AM is simpler, effectively just loops its one podcast
+                    playDuration = station.playlist[0].duration;
+                }
 
-                let currentTrackObject = null;
-                let audioPlaybackTime = 0;
+                // Calculate where we are in the continuous stream's cycle
+                const timeInCycle = nowInSeconds % playDuration;
 
-                for (const segment of station.streamHistory) {
-                    if (streamPositionInCycle >= segment.start && streamPositionInCycle < segment.end) {
-                        currentTrackObject = segment.track;
-                        audioPlaybackTime = streamPositionInCycle - segment.start;
+                let trackToPlay = null;
+                let startTimeForAudio = 0;
+
+                // Find which segment in the stream is playing at 'timeInCycle'
+                for (const segment of station.streamTimeline) {
+                    if (timeInCycle >= segment.start && timeInCycle < (segment.start + segment.duration)) {
+                        trackToPlay = segment.item;
+                        startTimeForAudio = timeInCycle - segment.start; // Calculate offset into this specific track
                         break;
                     }
                 }
 
-                // Fallback if no segment found (shouldn't happen with correct data)
-                if (!currentTrackObject) {
-                    currentTrackObject = station.streamHistory[0].track; // Default to first track
-                    audioPlaybackTime = 0;
+                // Fallback in case calculation fails (should not happen with proper setup)
+                if (!trackToPlay && station.streamTimeline.length > 0) {
+                    trackToPlay = station.streamTimeline[0].item;
+                    startTimeForAudio = 0;
+                } else if (!trackToPlay) { // Absolute fallback if stream timeline is empty
+                    return; // Cannot play anything
                 }
 
-                updateDisplay(station, currentTrackObject, seekAction);
+                const displayString = `${station.frequency} ${station.name}: ${trackToPlay.title}`;
+                updateScrollingDisplay(displayString, isSeekAction); // Update scrolling text
 
-                audio.src = currentTrackObject.url;
+                audio.src = trackToPlay.url;
                 audio.onloadedmetadata = () => {
-                    audio.currentTime = audioPlaybackTime;
+                    // Set current time to always be 0.
+                    // This resolves the user's explicit request: "songs must always start right at the very beginning".
+                    audio.currentTime = 0; // Always start at 0:00
+
                     if (playBtn.classList.contains('playing')) {
-                        audio.play().catch(e => console.warn("Autoplay prevented:", e));
+                         audio.play().catch(e => console.warn("Autoplay prevented:", e));
                     }
                 };
 
@@ -1057,11 +1081,15 @@
                 }
             }
 
-            // Handles logic for when a track ends (re-evaluates current stream position)
+
+            // Handles logic for when a track ends naturally (automatic progression within the station's stream)
             audio.addEventListener('ended', () => {
                 const currentStation = stations[currentStationIndex];
-                playCurrentTrackOfStation(currentStation); // Re-calculate and play what's next in the stream
+                // Simply retune to the current station to get the next track in its stream.
+                // The 'ended' event means the current segment finished, so the time will naturally advance.
+                tuneToStation(currentStation);
             });
+
 
             /* Play / pause button */
             playBtn.classList.add('paused'); // Initial state
@@ -1093,41 +1121,8 @@
                     this.removeEventListener('animationend', handler);
                 }, { once: true });
 
-                // Re-shuffle playlists for FM stations when seeking to them
                 const newStation = stations[currentStationIndex];
-                if (newStation.type === 'FM') {
-                    shuffleArray(newStation.playlist);
-                    shuffleArray(newStation.adPlaylist);
-                    // Re-compute stream history after shuffling
-                    let currentAccumulatedDuration = 0;
-                    newStation.streamHistory = [];
-                    const maxLength = Math.max(newStation.playlist.length, newStation.adPlaylist.length);
-                    for (let i = 0; i < maxLength; i++) {
-                        if (i < newStation.playlist.length) {
-                            const song = newStation.playlist[i];
-                            newStation.streamHistory.push({
-                                track: song,
-                                start: currentAccumulatedDuration,
-                                end: currentAccumulatedDuration + song.duration,
-                                isAd: false
-                            });
-                            currentAccumulatedDuration += song.duration;
-                        }
-                        if (i < newStation.adPlaylist.length) {
-                            const ad = newStation.adPlaylist[i];
-                            newStation.streamHistory.push({
-                                track: ad,
-                                start: currentAccumulatedDuration,
-                                end: currentAccumulatedDuration + ad.duration,
-                                isAd: true
-                            });
-                            currentAccumulatedDuration += ad.duration;
-                        }
-                    }
-                    newStation.cycleDuration = currentAccumulatedDuration;
-                }
-
-                playCurrentTrackOfStation(newStation, true); // True indicates a seek action for animation
+                tuneToStation(newStation, true); // True indicates a seek action for animation
             }
 
             seekLeftBtn.addEventListener('click', () => seekStation(-1));
@@ -1136,7 +1131,7 @@
 
             /* Init */
             audio.volume = volSl.valueAsNumber;
-            playCurrentTrackOfStation(stations[currentStationIndex]); // Load and prepare the initial station
+            tuneToStation(stations[currentStationIndex]); // Load and prepare the initial station
         }
 
         // --- FOOTER EASTER EGG ---
