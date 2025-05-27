@@ -130,12 +130,7 @@
             text-shadow:0 0 6px rgba(0,0,0,.6);
             pointer-events:none;
         }
-        .portfolio-intro {
-            margin-bottom: 1.25rem;
-            font-size: 1rem;
-            color: var(--text-color);
-            opacity: 0.8;
-        }
+        /* .portfolio-intro { removed } */
 
 
         /* Obscura rAIdio (Now a full section) */
@@ -479,10 +474,10 @@
 
         /* Mobile tweaks */
         @media (max-width:600px){
-          h1.logo          {font-size:2rem;}
+          .logo          { width: 90vw; max-width: 400px; } /* Doubled size for mobile */
           .landing-nav     {flex-direction:column; gap:1rem;}
           #portfolio-grid  {grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
-          .portfolio-intro {font-size:.9rem; text-align:center;}
+          /* .portfolio-intro { removed } */ /* No longer needed after removing the element */
 
           .radio-controls-grid {
               grid-template-columns: 1fr 1fr 1fr; /* Updated to 3 columns */
@@ -556,9 +551,8 @@
                  class="logo" />
             <nav class="landing-nav">
                 <a href="#portfolio" class="landing-link">Editorial</a>
-                <a href="#radio-section" class="landing-link">Obscura rAIdio</a>
-                <a href="#tools-section" class="landing-link">Tools</a> <!-- New link for tools section -->
-                <a href="#contact-section" class="landing-link">Contact</a>
+                <a href="#radio-section" class="landing-link">Generative AI</a>
+                <a href="#contact-section" class="landing-link">Connect</a>
             </nav>
         </div>
     </section>
@@ -571,9 +565,7 @@
         <section id="portfolio" class="container">
             <div class="section-content">
                 <h2>Portfolio</h2>
-                <p class="portfolio-intro">
-                    Click any thumbnail to view the spot in full screen.
-                </p>
+                <!-- Removed: <p class="portfolio-intro"> Click any thumbnail to view the spot in full screen. </p> -->
                 <div id="portfolio-grid">
                     <!-- Portfolio items will be injected by JS -->
                 </div>
@@ -614,7 +606,7 @@
             </div>
         </section>
 
-        <!-- New Tools Section -->
+        <!-- New Tools Section (Moved up) -->
         <section id="tools-section" class="container">
             <div class="section-content">
                 <h2>Tools We Love / Are Cautiously Experimenting With</h2>
@@ -655,12 +647,10 @@
                 <p>We believe in the power of sacred geometry, the magic of optics, and the endless flow of time as inspirations for transformative digital art.</p>
 
                 <div id="contact-section"> <!-- Combined About/Contact -->
-                    <h3>Connect</h3>
+                    <h3>Let's Talk!</h3>
                     <p class="contact-links">
                         Email: <a href="mailto:max@obscura.life">max@obscura.life</a>
-                        <a href="https://www.linkedin.com/company/obscura-creative-inc" target="_blank" rel="noopener noreferrer" aria-label="Obscura Creative Inc. on LinkedIn">
-                            LinkedIn
-                        </a>
+                        <!-- Removed: <a href="https://www.linkedin.com/company/obscura-creative-inc" target="_blank" rel="noopener noreferrer" aria-label="Obscura Creative Inc. on LinkedIn"> LinkedIn </a> -->
                     </p>
                 </div>
             </div>
