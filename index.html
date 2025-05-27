@@ -912,8 +912,8 @@
                 displayEl.style.transform = 'translateX(0)';
             }
 
-            // MODIFIED: loadTrack now returns a Promise
-            function loadTrack(resume = true) {
+            // MODIFIED: loadTrack now returns a Promise and handles autoplay internally
+            function loadTrack(resumePosition = true, shouldAutoplay = false) {
                 return new Promise((resolve) => {
                     const state = stationStates[stationIdx];
                     let track;
@@ -927,15 +927,46 @@
                         updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
                     }
 
+                    // Remove previous loadedmetadata listener to prevent multiple triggers
+                    audio.removeEventListener('loadedmetadata', onLoadedMetadataHandler);
+                    audio.removeEventListener('error', onErrorHandler);
+
                     audio.src = encodeURI(track.url);
-                    audio.load();
-                    
-                    const onLoadedMetadata = () => {
-                        audio.currentTime = resume ? state.playhead : 0;
-                        audio.removeEventListener('loadedmetadata', onLoadedMetadata); // Clean up listener
-                        resolve();
+                    audio.load(); // Load the new source
+
+                    // Handler for loadedmetadata event
+                    const onLoadedMetadataHandler = () => {
+                        const targetTime = resumePosition ? state.playhead : 0;
+                        audio.currentTime = targetTime; // Set playback position
+
+                        if (shouldAutoplay) {
+                            audio.play().then(() => {
+                                // Autoplay successful, button state updated by onplay listener
+                                resolve();
+                            }).catch(e => {
+                                console.warn("Autoplay prevented:", e);
+                                // Autoplay failed, ensure audio is paused and button reflects it
+                                audio.pause();
+                                resolve();
+                            });
+                        } else {
+                            // Not supposed to autoplay, ensure it's paused
+                            audio.pause();
+                            resolve();
+                        }
+                        audio.removeEventListener('loadedmetadata', onLoadedMetadataHandler); // Clean up listener
                     };
-                    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+                    audio.addEventListener('loadedmetadata', onLoadedMetadataHandler);
+
+                    // Handler for audio loading errors
+                    const onErrorHandler = () => {
+                        console.error(`Error loading audio for ${track.url}`);
+                        audio.removeEventListener('error', onErrorHandler);
+                        // Ensure it's paused and resolve on error
+                        audio.pause();
+                        resolve(); 
+                    };
+                    audio.addEventListener('error', onErrorHandler);
                 });
             }
 
@@ -956,14 +987,8 @@
                 }
 
                 state.playhead = 0;                           // fresh start for next track
-                loadTrack(false).then(() => {                 // false = start from 0 s
-                    if (wasPlayingBeforeEnd) { // Only auto-play if it was playing before the track ended
-                        audio.play().catch(() => {});
-                    } else {
-                        audio.pause(); // Ensure it remains paused if it was paused
-                        playBtn.classList.replace('playing', 'paused');
-                    }
-                });
+                // loadTrack will handle whether to autoplay based on wasPlayingBeforeEnd
+                loadTrack(false, wasPlayingBeforeEnd); 
             });
 
             // Persist playhead while playing
@@ -972,23 +997,35 @@
             });
 
             /* Controls */
+            // Initial button state
             playBtn.classList.add('paused');
+
+            // Event listeners to keep button state in sync with audio element
+            audio.onplay = () => {
+                playBtn.classList.replace('paused', 'playing');
+            };
+            audio.onpause = () => {
+                playBtn.classList.replace('playing', 'paused');
+            };
+
             playBtn.addEventListener('click',()=>{
                 if(audio.paused){
-                    audio.play().catch(()=>{});
-                    playBtn.classList.replace('paused','playing');
+                    // If audio is paused, attempt to play.
+                    // This will trigger the 'onplay' event listener.
+                    audio.play().catch(()=>{}); 
                 }else{
+                    // If audio is playing, pause it.
+                    // This will trigger the 'onpause' event listener.
                     audio.pause();
-                    playBtn.classList.replace('playing','paused');
                 }
             });
             volSl.addEventListener('input',()=>{ audio.volume = volSl.valueAsNumber; });
 
-            // MODIFIED: seek function is now async
+            // MODIFIED: seek function is now async and uses the new loadTrack signature
             async function seek(dir){
-                const wasPlaying = !audio.paused; // Check audio state *before* changing station
+                const wasPlaying = !audio.paused; // Store current playback state
                 
-                // remember where we left off for the *current* station
+                // Save playhead for the current station *before* changing stationIdx
                 stationStates[stationIdx].playhead = audio.currentTime;
                 
                 // Change to the new station index
@@ -997,21 +1034,11 @@
                 tuningDial.classList.add('seeking');
                 tuningDial.addEventListener('animationend',()=>tuningDial.classList.remove('seeking'),{once:true});
                 
-                // Await for the new track to load and its playhead to be set
-                await loadTrack(true);   // true = resume from saved playhead for the *new* station
+                // Await for the new track to load and its playhead to be set, 
+                // also telling it whether to attempt autoplay
+                await loadTrack(true, wasPlaying); 
                 
-                // If it was playing before the seek, attempt to play the new station
-                if (wasPlaying) {
-                    audio.play().catch((error)=>{
-                        console.warn("Autoplay was prevented:", error);
-                        playBtn.classList.replace('playing', 'paused'); // Revert button state if autoplay fails
-                    });
-                    playBtn.classList.replace('paused', 'playing'); // Ensure button shows playing if successful
-                } else {
-                    // If it was paused, ensure it remains paused
-                    audio.pause(); // Explicitly pause just in case
-                    playBtn.classList.replace('playing', 'paused'); // Ensure button is paused
-                }
+                // Play/pause state and button update are handled inside loadTrack and by onplay/onpause listeners.
             }
             seekLeftBtn.addEventListener('click', ()=>seek(-1));
             tuningDial.addEventListener('click',  ()=>seek(1)); // Tuning dial seeks right
@@ -1020,10 +1047,8 @@
 
             /* Init */
             audio.volume = volSl.valueAsNumber;
-            // The initial loadTrack call should also await, if we want to ensure everything is ready before interactions.
-            // However, since it's initially paused, it's less critical.
-            // Just loading it ensures the display is correct.
-            loadTrack(false); 
+            // Initial load of the first station. It should start paused.
+            loadTrack(false, false); 
         }
 
         // --- FOOTER EASTER EGG ---
