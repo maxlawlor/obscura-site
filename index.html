@@ -933,25 +933,30 @@
                     audio.load();
 
                     audio._onLoadedMetadata = () => {
-                        let target;           // seconds into current track
+                        let target;
 
-                        if (state.startClock !== null) {
-                            // Station has an existing on‑air clock ⇒ pick up from there
-                            const elapsed = (Date.now() - state.startClock) / 1000;
-                            target = audio.duration && !Number.isNaN(audio.duration)
-                                   ? elapsed % audio.duration               // wrap cleanly
-                                   : elapsed;                               // fallback if duration unavailable
-                        } else {
-                            // First time ever tuning to this station during this session.
-                            // Drop somewhere *random* inside the track to mimic a real broadcast.
-                            target = Math.random() * (audio.duration || 30); // 0‑30 s fallback if duration unknown
-                            // Anchor the on‑air clock so next time we can compute elapsed accurately.
+                        if (state.startClock === null) {
+                            /* FIRST‑EVER tune‑in to this station during the session:
+                               drop somewhere random to mimic twisting the real dial */
+                            target = Math.random() * (audio.duration || 30);
                             state.startClock = Date.now() - target * 1000;
+                        } else if (resumePosition) {
+                            /* Re‑tuning after leaving the station: pick up where the “broadcast
+                               clock” would be now. */
+                            const elapsed = (Date.now() - state.startClock) / 1000;
+                            target = (audio.duration && !Number.isNaN(audio.duration))
+                                   ? elapsed % audio.duration
+                                   : elapsed;
+                        } else {
+                            /* Continuous listening on the same station (song → ad → song):
+                               always start the new track from 0 s and reset the clock. */
+                            target = 0;
+                            state.startClock = Date.now();
                         }
 
-                        audio.currentTime = target;   // jump to the computed position
+                        audio.currentTime = target;
 
-                        // Keep legacy fields in sync for other logic
+                        // keep legacy fields in sync
                         state.playhead = target;
                         state.lastSeen = Date.now();
 
@@ -965,7 +970,7 @@
                         } else {
                             audio.pause();
                         }
-                        resolve(); // metadata ready
+                        resolve(); // track is ready
                     };
 
                     audio._onError = () => {
