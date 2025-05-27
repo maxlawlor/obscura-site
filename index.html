@@ -40,6 +40,7 @@
             --font-sans: "Red Hat Display", system-ui, sans-serif;
             --font-serif: "Red Hat Display", Georgia, serif;
             --font-display: "VT323", monospace; /* New font for radio display */
+            --marquee-duration: 10s; /* Default for radio display scrolling */
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -202,6 +203,15 @@
             animation: seekFade 0.3s ease-out;
         }
 
+        /* Marquee Animation for long text */
+        @keyframes marquee {
+            0%   { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        #radio-display.scrolling {
+            animation: marquee var(--marquee-duration) linear infinite;
+        }
+
 
         /* --- Radio Controls Grid Layout --- */
         .radio-controls-grid {
@@ -211,6 +221,9 @@
             gap: 1.5rem;
             margin-top: 1.5rem;
             width: 100%;
+            /* Assign grid areas for easier mobile reordering */
+            grid-template-areas:
+                "volume-area seek-left-area mute-area seek-right-area freq-area";
         }
         .radio-controls-grid > * {
             place-self: center;
@@ -227,32 +240,33 @@
             user-select: none;
             color: var(--accent-color);
             font-size: 0.9em;
+            margin-top: 0.5rem; /* Space between control and label */
         }
 
-        /* Volume Dial */
+        /* Volume Dial - NOW HORIZONTAL */
         .volume-component {
-            grid-column: 1;
-            height: 120px;
+            grid-area: volume-area;
+            height: auto; /* Adjust height for horizontal layout */
+            width: 100%; /* Take full width of its grid area */
+            flex-direction: column; /* Puts label below input */
             justify-content: center;
             position: relative;
             box-sizing: border-box;
-            flex-direction: column-reverse; /* Puts label below input */
         }
         .volume-component .dial-label {
-            margin-top: 1.25rem;      /* pushes label well clear of the rotated slider */
+            margin-top: 0.5rem; /* Consistent spacing */
             margin-bottom: 0;
         }
-
 
         .volume-component input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
-            width: 100px;
-            height: 20px;
-            background: transparent;
+            width: 100%; /* Fill parent container */
+            height: 8px; /* Thickness of the track */
+            background: #bbb; /* Default track color */
+            border-radius: 4px;
             cursor: pointer;
             outline: none;
-            transform: rotate(-90deg);
             margin: 0;
             position: relative;
             z-index: 2;
@@ -267,6 +281,7 @@
             border: 3px solid var(--card-bg-color);
             box-shadow: 0 0 0 3px var(--accent-color);
             transition: background .3s ease;
+            margin-top: -10px; /* Adjust to center thumb vertically on track */
         }
         .volume-component input[type="range"]::-moz-range-thumb {
             width: 28px;
@@ -277,31 +292,26 @@
             box-shadow: 0 0 0 3px var(--accent-color);
             transition: background .3s ease;
         }
-
-        /* Volume Track Background */
+        /* No need for .volume-track div anymore as we style the native track */
         .volume-component .volume-track {
-            position: absolute;
-            width: 6px;
-            height: 100px;
-            background: #bbb;
-            border-radius: 3px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1;
+            display: none; /* Hide the old track div */
         }
 
 
-        /* Play / pause button */
+        /* Mute/Unmute button */
         #play-pause{
-            width:50px;height:50px;border-radius:50%;
+            grid-area: mute-area;
+            width:80px;height:50px; /* Adjusted size to fit text */
+            border-radius:8px; /* Square with rounded corners */
             background:var(--accent-color);color:var(--background-color);
             border:none;cursor:pointer;font-weight:bold;
-            font-size:1.5rem;line-height:1;
-            grid-column: 3;
+            font-size:1rem;line-height:1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
         }
-        #play-pause.muted::after   { content:'🔇'; }
-        #play-pause.unmuted::after { content:'🔊'; }
+
 
         /* Seek buttons */
         .seek-button {
@@ -314,8 +324,8 @@
             font-weight: bold;
             font-size: 1.1rem;
         }
-        #seek-left { grid-column: 2; }
-        #seek-right { grid-column: 4; }
+        #seek-left { grid-area: seek-left-area; }
+        #seek-right { grid-area: seek-right-area; }
 
         .seek-button:hover {
              background-image: var(--spectral-gradient);
@@ -324,7 +334,7 @@
 
         /* Frequency Dial (Round Tuning Dial) */
         .freq-component {
-            grid-column: 5;
+            grid-area: freq-area;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -473,17 +483,42 @@
           .landing-nav     {flex-direction:column; gap:1rem;}
           #portfolio-grid  {grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
           .portfolio-intro {font-size:.9rem; text-align:center;}
+
           .radio-controls-grid {
-              grid-template-columns: 1fr 1fr 1fr;
+              grid-template-columns: 1fr 1fr 1fr; /* Updated to 3 columns */
               gap: 0.5rem;
+              /* Define mobile grid areas */
+              grid-template-areas:
+                  "volume-area volume-area mute-area"
+                  "seek-left-area freq-area seek-right-area";
           }
-          .volume-component, .freq-component {
-              grid-column: span 1;
+          /* Re-assign grid columns based on new grid areas for mobile */
+          .volume-component {
+              grid-area: volume-area;
+              margin: auto 0; /* Adjust margin for horizontal layout */
+              width: 100%;
+          }
+          #play-pause {
+              grid-area: mute-area;
               margin: auto;
           }
-          #play-pause, #seek-left, #seek-right {
-              grid-column: span 1;
+          #seek-left {
+              grid-area: seek-left-area;
               margin: auto;
+          }
+          #seek-right {
+              grid-area: seek-right-area;
+              margin: auto;
+          }
+          .freq-component {
+              grid-area: freq-area;
+              margin: auto;
+          }
+
+          /* Ensure volume slider fills its area properly on mobile */
+          .volume-component input[type="range"] {
+              width: calc(100% - 20px); /* Account for padding/margins */
+              margin: 0 10px; /* Add some horizontal padding */
           }
         }
 
@@ -557,13 +592,13 @@
                     <div class="radio-controls-grid">
                         <div class="radio-component volume-component">
                             <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" aria-label="Volume dial">
-                            <div class="volume-track"></div>
+                            <div class="volume-track"></div> <!-- This div is now hidden via CSS -->
                             <label for="volume-slider" class="dial-label">VOL</label>
                         </div>
 
                         <button id="seek-left" class="seek-button" aria-label="Seek previous station">◀◀</button>
 
-                        <button id="play-pause" aria-label="Play or Pause"></button>
+                        <button id="play-pause" aria-label="Mute or Unmute Audio"></button>
 
                         <button id="seek-right" class="seek-button" aria-label="Seek next station">▶▶</button>
 
@@ -852,6 +887,8 @@
             const displayEl   = document.getElementById('radio-display');
             const tuningDial  = document.getElementById('tuning-dial');
             const volSl       = document.getElementById('volume-slider');
+            const displayContainer = document.getElementById('radio-display-container'); // For marquee calculations
+
             if(!audio||!playBtn||!seekLeftBtn||!seekRightBtn||!displayEl||!tuningDial||!volSl) return;
 
             /* Playlists */
@@ -904,9 +941,21 @@
             let stationIdx = 0;   // currently tuned station
 
             function updateDisplay(text){
-                // Simple marquee reset
                 displayEl.textContent = text;
-                displayEl.style.transform = 'translateX(0)';
+                displayEl.style.transform = 'translateX(0)'; // Reset position
+                displayEl.classList.remove('scrolling'); // Remove previous animation class
+
+                // Calculate if scrolling is needed
+                requestAnimationFrame(() => {
+                    const textWidth = displayEl.scrollWidth; // Use scrollWidth to get full content width
+                    const containerWidth = displayContainer.clientWidth;
+
+                    if (textWidth > containerWidth) {
+                        const duration = textWidth / 50; // Adjust 50 for speed (pixels/second)
+                        displayEl.style.setProperty('--marquee-duration', `${duration}s`);
+                        displayEl.classList.add('scrolling');
+                    }
+                });
             }
 
             async function loadTrack(resumePosition = true, shouldAutoplay = false) {
@@ -918,7 +967,7 @@
                     const state = stationStates[stationIdx];
                     let track;
 
-                    if (state.playingAd) {
+                    if (stations[stationIdx].ads && state.playingAd) {
                         track = ADS[state.adIdx % ADS.length];
                         updateDisplay("You’re listening to Obscura rAIdio");
                     } else {
@@ -963,6 +1012,7 @@
                                 if (typeof process === 'undefined' || !process.env || process.env.NODE_ENV !== 'production') {
                                     console.warn("Autoplay prevented:", e);
                                 }
+                                // If autoplay prevented, ensure it's paused.
                                 audio.pause();
                             });
                         } else {
@@ -973,6 +1023,7 @@
 
                     audio._onError = () => {
                         console.error(`Error loading audio for ${track.url}. Verify file path & availability.`);
+                        updateDisplay("Error loading station...");
                         resolve();
                     };
 
@@ -984,8 +1035,6 @@
             /* Handle song/ad sequencing */
             audio.addEventListener('ended', () => {
                 const state = stationStates[stationIdx];
-                // const wasPlayingBeforeEnd = !audio.paused; // Check if it was playing just before it ended
-
                 if (stations[stationIdx].ads) {
                     state.playingAd = !state.playingAd;       // toggle song ↔ ad
                     if (!state.playingAd) {
@@ -994,7 +1043,10 @@
                         state.adIdx++;                        // finished song → first ad
                     }
                 } else {
-                    state.songIdx = 0;                        // AM podcast just loops
+                    state.songIdx++; // For AM, just loop to next track (or 0 if only one)
+                    if (state.songIdx >= AM.length) {
+                        state.songIdx = 0;
+                    }
                 }
 
                 state.playhead = 0;                           // fresh start for next track
@@ -1012,17 +1064,27 @@
             /* Controls */
             // --- Mute / Unmute ---
             audio.muted = true;            // start muted so autoplay is allowed
-            playBtn.classList.add('muted');
+            updateMuteUI(); // Initial state for button text
 
             function updateMuteUI(){
-                playBtn.classList.toggle('muted',   audio.muted);
-                playBtn.classList.toggle('unmuted', !audio.muted);
+                playBtn.textContent = audio.muted ? 'UNMUTE' : 'MUTE';
             }
             playBtn.addEventListener('click', () => {
                 audio.muted = !audio.muted;
                 updateMuteUI();
+                // If unmuting, ensure audio is playing (if it wasn't paused by user)
+                if (!audio.muted && audio.paused && audio.src) {
+                    audio.play().catch(e => console.warn("Play prevented:", e));
+                } else if (audio.muted && !audio.paused) {
+                    // If muting while playing, still let it play silently
+                }
             });
-            volSl.addEventListener('input',()=>{ audio.volume = volSl.valueAsNumber; });
+
+            // Volume slider controls the actual volume level
+            volSl.addEventListener('input',()=>{
+                audio.volume = volSl.valueAsNumber;
+            });
+
 
             // MODIFIED: seek function is now async and uses the new loadTrack signature
             async function seek(dir){
@@ -1035,9 +1097,9 @@
                 tuningDial.addEventListener('animationend',()=>tuningDial.classList.remove('seeking'),{once:true});
                 
                 // Await for the new track to load and its playhead to be set, 
-                // always autoplay next
+                // always autoplay next (it will play muted if it was muted before seek)
                 await loadTrack(true, true);
-                audio.muted = wasMuted;
+                audio.muted = wasMuted; // Restore mute state after load
                 updateMuteUI();
             }
             seekLeftBtn.addEventListener('click', ()=>seek(-1));
