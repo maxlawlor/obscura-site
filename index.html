@@ -912,34 +912,37 @@
                 displayEl.style.transform = 'translateX(0)';
             }
 
+            // MODIFIED: loadTrack now returns a Promise
             function loadTrack(resume = true) {
-                const state = stationStates[stationIdx];
-                let track;
+                return new Promise((resolve) => {
+                    const state = stationStates[stationIdx];
+                    let track;
 
-                if (state.playingAd) {
-                    track = ADS[state.adIdx % ADS.length];
-                    updateDisplay(`ADVERTISEMENT – ${track.title}`);
-                } else {
-                    const list = stations[stationIdx].list;
-                    track = list[state.songIdx % list.length];
-                    updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
-                }
+                    if (state.playingAd) {
+                        track = ADS[state.adIdx % ADS.length];
+                        updateDisplay(`ADVERTISEMENT – ${track.title}`);
+                    } else {
+                        const list = stations[stationIdx].list;
+                        track = list[state.songIdx % list.length];
+                        updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
+                    }
 
-                audio.src = encodeURI(track.url);
-                audio.load();
-                audio.addEventListener(
-                    'loadedmetadata',
-                    () => {
-                        // Jump to saved position only when re‑tuning to the station
+                    audio.src = encodeURI(track.url);
+                    audio.load();
+                    
+                    const onLoadedMetadata = () => {
                         audio.currentTime = resume ? state.playhead : 0;
-                    },
-                    { once: true }
-                );
+                        audio.removeEventListener('loadedmetadata', onLoadedMetadata); // Clean up listener
+                        resolve();
+                    };
+                    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+                });
             }
 
             /* Handle song/ad sequencing */
             audio.addEventListener('ended', () => {
                 const state = stationStates[stationIdx];
+                const wasPlayingBeforeEnd = !audio.paused; // Check if it was playing just before it ended
 
                 if (stations[stationIdx].ads) {
                     state.playingAd = !state.playingAd;       // toggle song ↔ ad
@@ -953,8 +956,14 @@
                 }
 
                 state.playhead = 0;                           // fresh start for next track
-                loadTrack(false);                             // false = start from 0 s
-                audio.play();
+                loadTrack(false).then(() => {                 // false = start from 0 s
+                    if (wasPlayingBeforeEnd) { // Only auto-play if it was playing before the track ended
+                        audio.play().catch(() => {});
+                    } else {
+                        audio.pause(); // Ensure it remains paused if it was paused
+                        playBtn.classList.replace('playing', 'paused');
+                    }
+                });
             });
 
             // Persist playhead while playing
@@ -975,22 +984,46 @@
             });
             volSl.addEventListener('input',()=>{ audio.volume = volSl.valueAsNumber; });
 
-            function seek(dir){
-                // remember where we left off
+            // MODIFIED: seek function is now async
+            async function seek(dir){
+                const wasPlaying = !audio.paused; // Check audio state *before* changing station
+                
+                // remember where we left off for the *current* station
                 stationStates[stationIdx].playhead = audio.currentTime;
+                
+                // Change to the new station index
                 stationIdx = (stationIdx + dir + stations.length) % stations.length;
+                
                 tuningDial.classList.add('seeking');
                 tuningDial.addEventListener('animationend',()=>tuningDial.classList.remove('seeking'),{once:true});
-                loadTrack(true);   // true = resume from saved playhead
-                audio.play().catch(()=>{});   // Force resume after station change
+                
+                // Await for the new track to load and its playhead to be set
+                await loadTrack(true);   // true = resume from saved playhead for the *new* station
+                
+                // If it was playing before the seek, attempt to play the new station
+                if (wasPlaying) {
+                    audio.play().catch((error)=>{
+                        console.warn("Autoplay was prevented:", error);
+                        playBtn.classList.replace('playing', 'paused'); // Revert button state if autoplay fails
+                    });
+                    playBtn.classList.replace('paused', 'playing'); // Ensure button shows playing if successful
+                } else {
+                    // If it was paused, ensure it remains paused
+                    audio.pause(); // Explicitly pause just in case
+                    playBtn.classList.replace('playing', 'paused'); // Ensure button is paused
+                }
             }
             seekLeftBtn.addEventListener('click', ()=>seek(-1));
+            tuningDial.addEventListener('click',  ()=>seek(1)); // Tuning dial seeks right
             seekRightBtn.addEventListener('click',()=>seek(1));
-            tuningDial.addEventListener('click',  ()=>seek(1));
+
 
             /* Init */
             audio.volume = volSl.valueAsNumber;
-            loadTrack(false); // start fresh on first visit
+            // The initial loadTrack call should also await, if we want to ensure everything is ready before interactions.
+            // However, since it's initially paused, it's less critical.
+            // Just loading it ensures the display is correct.
+            loadTrack(false); 
         }
 
         // --- FOOTER EASTER EGG ---
