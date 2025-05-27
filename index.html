@@ -12,7 +12,7 @@
 
 
     <!-- Favicon -->
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/logo/Obscura-logo.svg" type="image/svg+xml">
 
     <!-- Preconnect hints -->
     <link rel="preconnect" href="https://i.ytimg.com">
@@ -897,10 +897,14 @@
                 { name:'103.1 Madness FM', list:FM1, ads:true  },
                 { name:'98.9 Uncanny FM',  list:FM2, ads:true  }
             ];
-            let stationIdx = 0;
-            let songIdx    = 0;
-            let playingAd  = false;
-            let adIdx      = 0;
+            // --- Per‑station playback state ---
+            const stationStates = stations.map(() => ({
+                songIdx: 0,        // which song/podcast episode is playing
+                adIdx: 0,          // which ad is next
+                playingAd: false,  // toggle song ↔ ad
+                playhead: 0        // currentTime (seconds) within the track
+            }));
+            let stationIdx = 0;   // currently tuned station
 
             function updateDisplay(text){
                 // Simple marquee reset
@@ -908,31 +912,54 @@
                 displayEl.style.transform = 'translateX(0)';
             }
 
-            function loadTrack(){
+            function loadTrack(resume = true) {
+                const state = stationStates[stationIdx];
                 let track;
-                if(playingAd){
-                    track = ADS[adIdx++ % ADS.length];
+
+                if (state.playingAd) {
+                    track = ADS[state.adIdx % ADS.length];
                     updateDisplay(`ADVERTISEMENT – ${track.title}`);
-                }else{
+                } else {
                     const list = stations[stationIdx].list;
-                    track = list[songIdx % list.length];
+                    track = list[state.songIdx % list.length];
                     updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
                 }
-                // Encode URI to handle spaces or unicode in filenames
+
                 audio.src = encodeURI(track.url);
                 audio.load();
+                audio.addEventListener(
+                    'loadedmetadata',
+                    () => {
+                        // Jump to saved position only when re‑tuning to the station
+                        audio.currentTime = resume ? state.playhead : 0;
+                    },
+                    { once: true }
+                );
             }
 
             /* Handle song/ad sequencing */
-            audio.addEventListener('ended',()=>{
-                if(stations[stationIdx].ads){
-                    playingAd = !playingAd;           // Toggle song ↔ ad
-                    if(!playingAd){ songIdx++; }      // After the ad, advance to next song
-                }else{
-                    songIdx = 0;                      // AM just loops podcast
+            audio.addEventListener('ended', () => {
+                const state = stationStates[stationIdx];
+
+                if (stations[stationIdx].ads) {
+                    state.playingAd = !state.playingAd;       // toggle song ↔ ad
+                    if (!state.playingAd) {
+                        state.songIdx++;                      // finished ad → next song
+                    } else {
+                        state.adIdx++;                        // finished song → first ad
+                    }
+                } else {
+                    state.songIdx = 0;                        // AM podcast just loops
                 }
-                loadTrack();
+
+                state.playhead = 0;                           // fresh start for next track
+                loadTrack(false);                             // false = start from 0 s
                 audio.play();
+            });
+
+            // Persist playhead while playing
+            audio.addEventListener('timeupdate', () => {
+                stationStates[stationIdx].playhead = audio.currentTime;
             });
 
             /* Controls */
@@ -949,11 +976,12 @@
             volSl.addEventListener('input',()=>{ audio.volume = volSl.valueAsNumber; });
 
             function seek(dir){
+                // remember where we left off
+                stationStates[stationIdx].playhead = audio.currentTime;
                 stationIdx = (stationIdx + dir + stations.length) % stations.length;
-                songIdx = 0; playingAd = false;
                 tuningDial.classList.add('seeking');
                 tuningDial.addEventListener('animationend',()=>tuningDial.classList.remove('seeking'),{once:true});
-                loadTrack();
+                loadTrack(true);   // true = resume from saved playhead
                 audio.play().catch(()=>{});   // Force resume after station change
             }
             seekLeftBtn.addEventListener('click', ()=>seek(-1));
@@ -962,7 +990,7 @@
 
             /* Init */
             audio.volume = volSl.valueAsNumber;
-            loadTrack();  // load first track (paused)
+            loadTrack(false); // start fresh on first visit
         }
 
         // --- FOOTER EASTER EGG ---
