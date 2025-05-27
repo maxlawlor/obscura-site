@@ -844,7 +844,7 @@
 
 
         // --- UPDATED OBSCURA rAIDIO ---
-        function initRadio() {
+        async function initRadio() {
             const audio       = document.getElementById('radio-audio');
             const playBtn     = document.getElementById('play-pause');
             const seekLeftBtn = document.getElementById('seek-left');
@@ -905,62 +905,50 @@
                 displayEl.style.transform = 'translateX(0)';
             }
 
-            // MODIFIED: loadTrack now returns a Promise and handles autoplay internally
             function loadTrack(resumePosition = true, shouldAutoplay = false) {
-                return new Promise((resolve) => {
-                    const state = stationStates[stationIdx];
-                    let track;
+                // Preserve last‑attached handlers (if any) that we stash on the <audio> element itself
+                if (audio._onLoadedMetadata) {
+                    audio.removeEventListener('loadedmetadata', audio._onLoadedMetadata);
+                }
+                if (audio._onError) {
+                    audio.removeEventListener('error', audio._onError);
+                }
 
-                    if (state.playingAd) {
-                        track = ADS[state.adIdx % ADS.length];
-                        updateDisplay(`ADVERTISEMENT – ${track.title}`);
-                    } else {
-                        const list = stations[stationIdx].list;
-                        track = list[state.songIdx % list.length];
-                        updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
-                    }
+                const state = stationStates[stationIdx];
+                let track;
 
-                    // Remove previous loadedmetadata and error listeners to prevent multiple triggers
-                    audio.removeEventListener('loadedmetadata', onLoadedMetadataHandler);
-                    audio.removeEventListener('error', onErrorHandler);
+                if (state.playingAd) {
+                    track = ADS[state.adIdx % ADS.length];
+                    updateDisplay(`ADVERTISEMENT – ${track.title}`);
+                } else {
+                    const list = stations[stationIdx].list;
+                    track = list[state.songIdx % list.length];
+                    updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
+                }
 
-                    audio.src = encodeURI(track.url);
-                    audio.load(); // Load the new source
+                audio.src = encodeURI(track.url);
+                audio.load(); // kick off network request
 
-                    // Handler for loadedmetadata event
-                    const onLoadedMetadataHandler = () => {
-                        const targetTime = resumePosition ? state.playhead : 0;
-                        audio.currentTime = targetTime; // Set playback position
+                // Fresh handlers for this load – save references on the element so we can detach next time
+                audio._onLoadedMetadata = () => {
+                    audio.currentTime = resumePosition ? state.playhead : 0;
 
-                        if (shouldAutoplay) {
-                            audio.play().then(() => {
-                                // Autoplay successful, button state updated by onplay listener
-                                resolve();
-                            }).catch(e => {
-                                console.warn("Autoplay prevented:", e);
-                                // Autoplay failed, ensure audio is paused and button reflects it
-                                audio.pause();
-                                resolve();
-                            });
-                        } else {
-                            // Not supposed to autoplay, ensure it's paused
+                    if (shouldAutoplay) {
+                        audio.play().catch(e => {
+                            console.warn("Autoplay prevented:", e);
                             audio.pause();
-                            resolve();
-                        }
-                        audio.removeEventListener('loadedmetadata', onLoadedMetadataHandler); // Clean up listener
-                    };
-                    audio.addEventListener('loadedmetadata', onLoadedMetadataHandler);
+                        });
+                    } else {
+                        audio.pause(); // ensure silence until user hits play
+                    }
+                };
 
-                    // Handler for audio loading errors
-                    const onErrorHandler = () => {
-                        console.error(`Error loading audio for ${track.url}. Please check the file path and availability.`);
-                        audio.removeEventListener('error', onErrorHandler);
-                        // Ensure it's paused and resolve on error
-                        audio.pause();
-                        resolve(); 
-                    };
-                    audio.addEventListener('error', onErrorHandler);
-                });
+                audio._onError = () => {
+                    console.error(`Error loading audio for ${track.url}. Verify file path & availability.`);
+                };
+
+                audio.addEventListener('loadedmetadata', audio._onLoadedMetadata, { once: true });
+                audio.addEventListener('error',          audio._onError,          { once: true });
             }
 
             /* Handle song/ad sequencing */
