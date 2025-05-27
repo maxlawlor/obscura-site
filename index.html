@@ -320,7 +320,7 @@
             position:relative;width:100%;height:100vh;overflow:hidden;
             display:flex;align-items:center;justify-content:center;
         }
-        #sphere-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+        /* #sphere-canvas element removed */
         .landing-inner{
             text-align:center;
             position:relative;
@@ -383,7 +383,7 @@
 
     <!-- Landing Hero -->
     <section id="landing-hero">
-        <canvas id="sphere-canvas" aria-hidden="true"></canvas>
+        <!-- The sphere-canvas element was removed -->
 
         <div class="landing-inner">
             <img src="/logo/Obscura-logo.svg"
@@ -584,91 +584,21 @@
 
             initNav();
             initPortfolio();
-            initRadio(); // Call the updated initRadio
+            initRadio();
             initFooterEasterEgg();
 
-            // Defer Three.js loading further if possible, or load it now for components that need them.
-            // For Hero canvas, Three.js is critical path, so load it earlier or show a loader.
-            // For Lab section, it can be loaded on demand (e.g., when section is visible or interacted with)
-
-            // For simplicity here, we'll load it sequentially but mark for potential on-demand loading.
-            // THREE.JS related inits (Hero, Lab)
+            // Load Three.js related components only if needed (Lab section)
             const threeModule = await import(THREE_PATH);
-            Three = threeModule; // Three should contain Scene, PerspectiveCamera etc.
+            Three = threeModule;
 
-            if (document.getElementById('sphere-canvas')) initHeroCanvas(); // Corrected element ID for hero canvas
+            // initHeroCanvas() call removed
             if (document.getElementById('lab')) initAILab();
         }
 
 
-        // --- HERO CANVAS (THREE.JS) ---
-        function initHeroCanvas() {
-            const canvas = document.getElementById('sphere-canvas');
-            if (!canvas) return;
+        // --- HERO CANVAS (Removed) ---
+        // The initHeroCanvas function is no longer present.
 
-            const scene = new Three.Scene();
-            const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 5;
-
-            const renderer = new Three.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-            const material = new Three.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
-
-            const group = new Three.Group();
-            const sphere = new Three.Mesh(
-                new Three.SphereGeometry(2,32,32),
-                material
-            );
-            group.add(sphere);
-            scene.add(group);
-
-            if (!prefersReducedMotion) {
-                group.scale.set(0, 0, 0);
-                group.rotation.set(Math.PI / 4, Math.PI / 4, 0);
-                Anime({
-                    targets: group.scale,
-                    x: 1, y: 1, z: 1,
-                    duration: 1200,
-                    easing: 'easeOutExpo'
-                });
-                Anime({
-                    targets: group.rotation,
-                    y: `+=${Math.PI * 2}`, // example of subtle intro rotation
-                    x: `+=${Math.PI}`,
-                    duration: 2000,
-                    delay: 500,
-                    easing: 'easeInOutSine'
-                });
-            }
-
-            function animate() {
-                requestAnimationFrame(animate);
-                if (!prefersReducedMotion) {
-                    // Slow rotation as user scrolls: 100 % speed at top → 30 % after 60 vh
-                    const scrollRatio = Math.min(1, window.scrollY / (window.innerHeight * 0.6));
-                    const speed       = 0.003 * (1 - scrollRatio * 0.7);
-                    group.rotation.y += speed;
-                    group.rotation.x += speed * 0.5;
-                }
-                renderer.render(scene, camera);
-            }
-            animate();
-
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            });
-
-            // Hide hero geometry once the user scrolls past 60vh
-            window.addEventListener('scroll', () => {
-                const opacity = Math.max(0, 1 - window.scrollY / (window.innerHeight * 0.6));
-                canvas.style.opacity = opacity;
-            });
-        }
 
         // --- SACRED-NETWORK NAV OVERLAY ---
         function initNav() {
@@ -921,104 +851,154 @@
 
         // --- UPDATED OBSCURA rAIDIO ---
         function initRadio() {
-            const audio      = document.getElementById('radio-audio');
-            const titleEl    = document.getElementById('radio-current-track');
-            const playBtn    = document.getElementById('play-pause');
-            const seekLeftBtn= document.getElementById('seek-left');
+            const audio       = document.getElementById('radio-audio');
+            const titleEl     = document.getElementById('radio-current-track');
+            const playBtn     = document.getElementById('play-pause');
+            const seekLeftBtn = document.getElementById('seek-left');
             const seekRightBtn= document.getElementById('seek-right');
-            const bandLbl    = document.getElementById('band-label');
-            const volSl      = document.getElementById('volume-slider');
+            const bandLbl     = document.getElementById('band-label');
+            const volSl       = document.getElementById('volume-slider');
 
             if (!audio || !titleEl || !playBtn || !seekLeftBtn || !seekRightBtn || !bandLbl || !volSl) return;
 
-            // Combined list of channels (AM, FM, Ads, Noise)
-            const channels = [
-                // Noise Channels (for more realistic seeking, if audio files for static exist)
-                { frequency: '87.9', type: 'NOISE', title: 'Static Noise', url: '' }, // Placeholder, can point to a static.mp3
-                { frequency: '88.1', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '88.3', type: 'AM',    title: 'NotebookLM Podcast', url: '/audio/am/NotebookLM-Podcast.mp3' },
-                { frequency: '88.5', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '90.7', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '92.3', type: 'AD',    title: 'Ad Spot 01', url: '/audio/ads/Ad01.mp3' },
-                { frequency: '93.0', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '95.8', type: 'FM',    title: 'All Of My Bins', url: '/audio/fm01/All-Of-My-Bins.mp3' },
-                { frequency: '96.2', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '97.5', type: 'AD',    title: 'Ad Spot 02', url: '/audio/ads/Ad02.mp3' },
-                { frequency: '98.9', type: 'FM',    title: 'Obscura Sonnet', url: '/audio/fm02/Obscura-Sonnet.mp3' },
-                { frequency: '99.1', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '100.5', type: 'FM',    title: 'FatRatʼs Saga', url: '/audio/fm01/FatRats-Saga.mp3' },
-                { frequency: '101.2', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '102.7', type: 'FM',    title: 'Distracted by Skeletons', url: '/audio/fm02/Distracted-by-Skeletons.mp3' },
-                { frequency: '103.1', type: 'FM',    title: 'Make the Website', url: '/audio/fm01/Make-the-Website.mp3' },
-                { frequency: '103.5', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '104.9', type: 'AD',    title: 'Ad Spot 03', url: '/audio/ads/Ad03.mp3' },
-                { frequency: '105.0', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '106.3', type: 'FM',    title: 'Too Far Apart', url: '/audio/fm02/Too-Far-Apart.mp3' },
-                { frequency: '107.5', type: 'NOISE', title: 'Static Noise', url: '' },
-                { frequency: '108.0', type: 'FM',    title: 'Why Do You Look Like a Dragon', url: '/audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3' },
+            // Define ad bumper tracks once
+            const ADS = [
+                { title: 'Ad Spot 01', url: '/audio/ads/Ad01.mp3' },
+                { title: 'Ad Spot 02', url: '/audio/ads/Ad02.mp3' },
+                { title: 'Ad Spot 03', url: '/audio/ads/Ad03.mp3' }
+            ];
 
-            ].sort((a,b) => parseFloat(a.frequency) - parseFloat(b.frequency)); // Ensure channels are sorted by frequency
+            // Define the stations
+            const stations = [
+                {
+                    name: 'Obscura Talk Radio',
+                    frequency: '88.3 AM',
+                    type: 'AM',
+                    playlist: [{ title: 'NotebookLM Podcast', url: '/audio/am/NotebookLM-Podcast.mp3' }],
+                    currentTrackIndex: 0,
+                    isPlayingAd: false // AM does not play ads
+                },
+                {
+                    name: 'Madness FM',
+                    frequency: '103.1 FM',
+                    type: 'FM',
+                    playlist: [
+                        { title:'All Of My Bins',        url:'/audio/fm01/All-Of-My-Bins.mp3' },
+                        { title:'FatRatʼs Saga',         url:'/audio/fm01/FatRats-Saga.mp3' },
+                        { title:'Make the Website',      url:'/audio/fm01/Make-the-Website.mp3' },
+                        { title:'Out Exploring',         url:'/audio/fm01/Out-Exploring.mp3' },
+                        { title:'Slop Slop Slop',        url:'/audio/fm01/Slop-Slop-Slop.mp3' },
+                        { title:'Squallʼs AI Ghul',      url:'/audio/fm01/Squalls-AI-Ghul.mp3' },
+                        { title:'Tell Me',               url:'/audio/fm01/Tell-Me.mp3' },
+                        { title:'Wizard of Moscow',      url:'/audio/fm01/Wizard-of-Moscow.mp3' }
+                    ],
+                    adPlaylist: ADS,
+                    currentTrackIndex: 0,
+                    currentAdIndex: 0,
+                    isPlayingAd: false
+                },
+                {
+                    name: 'Unhinged FM',
+                    frequency: '98.9 FM',
+                    type: 'FM',
+                    playlist: [
+                        { title:'Distracted by Skeletons', url:'/audio/fm02/Distracted-by-Skeletons.mp3' },
+                        { title:'Fractals',                url:'/audio/fm02/Fractals.mp3' },
+                        { title:'Good Game!',              url:'/audio/fm02/Good-Game.mp3' },
+                        { title:'Missing You (Cover)',     url:'/audio/fm02/Missing-You.mp3' },
+                        { title:'Obscura Sonnet',          url:'/audio/fm02/Obscura-Sonnet.mp3' },
+                        { title:'Prism',                   url:'/audio/fm02/Prism.mp3' },
+                        { title:'Puppet',                  url:'/audio/fm02/Puppet.mp3' },
+                        { title:'Quiet Anvil',             url:'/audio/fm02/Quiet-Anvil.mp3' },
+                        { title:'Too Far Apart',           url:'/audio/fm02/Too-Far-Apart.mp3' },
+                        { title:'Why Do You Look Like a Dragon', url:'/audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3' }
+                    ],
+                    adPlaylist: ADS,
+                    currentTrackIndex: 0,
+                    currentAdIndex: 0,
+                    isPlayingAd: false
+                }
+            ];
 
-            let currentChannelIndex = 0; // Start at the first channel
+            let currentStationIndex = 0; // Start with the first station (Obscura Talk Radio)
 
-            function updateDisplay(channel) {
-                bandLbl.textContent = channel.frequency + ' MHz'; // Or kHz for AM if you prefer
-                titleEl.textContent = channel.title;
+            function updateDisplay(station, trackTitle) {
+                bandLbl.textContent = station.frequency;
+                titleEl.textContent = trackTitle;
             }
 
-            function loadChannel(index, seekAction = false) {
-                const channel = channels[index];
+            function playCurrentTrackOfStation(station, seekAction = false) {
+                let track;
+
+                if (station.type === 'AM') {
+                    // AM has only one track that loops
+                    track = station.playlist[0];
+                } else { // FM stations
+                    if (station.isPlayingAd) {
+                        track = station.adPlaylist[station.currentAdIndex % station.adPlaylist.length];
+                    } else {
+                        track = station.playlist[station.currentTrackIndex % station.playlist.length];
+                    }
+                }
 
                 if (seekAction) {
                     titleEl.textContent = 'Searching...';
                     titleEl.classList.add('seek-active');
-                    // Remove class after animation to allow it to re-trigger
                     titleEl.addEventListener('animationend', () => {
                         titleEl.classList.remove('seek-active');
-                        updateDisplay(channel);
+                        updateDisplay(station, track.title);
                     }, { once: true });
                 } else {
-                    updateDisplay(channel);
+                    updateDisplay(station, track.title);
                 }
 
-
-                if (channel.url) {
-                    audio.src = channel.url;
-                    audio.onloadedmetadata = () => {
-                        // For non-ad music, use pseudo-live offset
-                        if (channel.type !== 'AD' && channel.type !== 'NOISE' && audio.duration && !isNaN(audio.duration)) {
+                audio.src = track.url;
+                audio.onloadedmetadata = () => {
+                    // For true radio feel, AM and FM songs start at a pseudo-live offset
+                    // Ads start from beginning
+                    if (station.type === 'AM' || !station.isPlayingAd) { // Apply offset for podcasts and songs
+                        if (audio.duration && !isNaN(audio.duration)) {
                             const offset = (Date.now() / 1000) % audio.duration;
                             audio.currentTime = offset;
-                        } else {
-                            audio.currentTime = 0; // Start from beginning for ads/noise
                         }
-                    };
-                    if (playBtn.classList.contains('playing')) {
-                         audio.play().catch(e => console.warn("Autoplay prevented:", e));
+                    } else {
+                        audio.currentTime = 0; // Start ads from the beginning
                     }
+                };
+
+                if (playBtn.classList.contains('playing')) {
+                     audio.play().catch(e => console.warn("Autoplay prevented:", e));
                 } else {
-                    // Handle noise channels or empty URLs (e.g., stop audio)
-                    audio.pause();
-                    audio.src = ''; // Clear source
-                    titleEl.textContent = channel.title; // Directly set if not doing seek animation
+                    // If currently paused, preload the new track but don't play
+                    audio.load();
                 }
             }
 
-            function seek(direction) {
-                currentChannelIndex += direction;
-                if (currentChannelIndex < 0) {
-                    currentChannelIndex = channels.length - 1; // Wrap around to end
-                } else if (currentChannelIndex >= channels.length) {
-                    currentChannelIndex = 0; // Wrap around to beginning
+            // Handles logic for when a track ends
+            audio.addEventListener('ended', () => {
+                const currentStation = stations[currentStationIndex];
+
+                if (currentStation.type === 'AM') {
+                    // AM podcast just restarts
+                    playCurrentTrackOfStation(currentStation);
+                } else { // FM stations
+                    if (currentStation.isPlayingAd) {
+                        // Ad just finished, play next song
+                        currentStation.isPlayingAd = false;
+                        currentStation.currentTrackIndex++;
+                        playCurrentTrackOfStation(currentStation);
+                    } else {
+                        // Song just finished, play next ad
+                        currentStation.isPlayingAd = true;
+                        currentStation.currentAdIndex++;
+                        playCurrentTrackOfStation(currentStation);
+                    }
                 }
-                loadChannel(currentChannelIndex, true); // True indicates a seek action
-                if (!audio.paused) {
-                    audio.play().catch(e => console.warn("Autoplay prevented during seek:", e));
-                }
-            }
+                audio.play().catch(e => console.warn("Autoplay prevented after track ended:", e));
+            });
 
             /* Play / pause button */
-            playBtn.classList.add('paused');
+            playBtn.classList.add('paused'); // Initial state
             playBtn.addEventListener('click', () => {
                 if (audio.paused) {
                     audio.play().catch(e => console.warn("Autoplay prevented:", e));
@@ -1031,19 +1011,41 @@
 
             volSl.addEventListener('input', () => { audio.volume = volSl.valueAsNumber; });
 
-            seekLeftBtn.addEventListener('click', () => seek(-1));
-            seekRightBtn.addEventListener('click', () => seek(1));
+            // Seek buttons
+            seekLeftBtn.addEventListener('click', () => {
+                currentStationIndex--;
+                if (currentStationIndex < 0) {
+                    currentStationIndex = stations.length - 1; // Wrap around to last station
+                }
+                // Reset state for new station before playing
+                const newStation = stations[currentStationIndex];
+                newStation.isPlayingAd = false; // Always start with a song on FM, not ad
+                // If it's an AM station, the index doesn't need resetting for simple loops
+                if (newStation.type === 'FM') {
+                    newStation.currentTrackIndex = 0;
+                    newStation.currentAdIndex = 0;
+                }
+                playCurrentTrackOfStation(newStation, true);
+            });
 
-            // Auto-seek to next channel when current track ends
-            audio.addEventListener('ended', () => {
-                // If it was an ad, and not the last channel, advance to next channel, otherwise just advance normally.
-                // For simplicity, just advance one step and loop.
-                seek(1);
+            seekRightBtn.addEventListener('click', () => {
+                currentStationIndex++;
+                if (currentStationIndex >= stations.length) {
+                    currentStationIndex = 0; // Wrap around to first station
+                }
+                // Reset state for new station before playing
+                const newStation = stations[currentStationIndex];
+                newStation.isPlayingAd = false; // Always start with a song on FM, not ad
+                if (newStation.type === 'FM') {
+                    newStation.currentTrackIndex = 0;
+                    newStation.currentAdIndex = 0;
+                }
+                playCurrentTrackOfStation(newStation, true);
             });
 
             /* Init */
             audio.volume = volSl.valueAsNumber;
-            loadChannel(currentChannelIndex); // Load the initial channel
+            playCurrentTrackOfStation(stations[currentStationIndex]); // Load and prepare the initial station
         }
 
         // --- FOOTER EASTER EGG ---
