@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&display=swap" rel="stylesheet"> <!-- For scrolling text -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet"> <!-- New font for radio display -->
 
 
     <!-- Favicon -->
@@ -39,7 +39,7 @@
                 hsl(210, 80%, 55%), hsl(220, 80%, 55%), hsl(230, 80%, 55%)); /* cleaned to a blue gradient */
             --font-sans: "Red Hat Display", system-ui, sans-serif;
             --font-serif: "Red Hat Display", Georgia, serif;
-            --font-display: "Major Mono Display", monospace; /* New font for radio display */
+            --font-display: "VT323", monospace; /* New font for radio display */
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -145,33 +145,30 @@
             text-align: center;
         }
         #radio-block{
-            /* Removed background-color, border-radius, box-shadow from here for single bounding box */
+            /* Removed background-color, border-radius, box-shadow to achieve single bounding box */
             padding: 1.5rem;
-            margin-top: 1rem; /* Still need some space below description */
+            margin-top: 1rem;
             width: 100%;
             max-width: 600px; /* Constrain width for radio unit */
             box-sizing: border-box;
-            position: relative; /* Needed for absolute positioning of track */
+            position: relative;
         }
 
         .radio-logo {
-            width: 200px; /* Adjust size as needed */
+            width: 200px;
             height: auto;
-            margin-bottom: 1rem; /* Space below the logo */
-            display: block; /* Ensure it takes its own line */
+            margin-bottom: 1rem;
+            display: block;
         }
 
-        #radio-block .radio-description {
-            margin-bottom: 1rem;
-        }
         #radio-audio{
             display:none; /* Hidden controls for true radio feel */
         }
 
         /* --- Radio Display (Scrolling Text) --- */
         #radio-display-container {
-            width: 90%; /* Max width for display */
-            height: 2.5rem; /* Fixed height for display */
+            width: 90%;
+            height: 2.5rem;
             background-color: var(--background-color); /* Brand yellow */
             border: 2px solid var(--accent-color); /* Blue border */
             border-radius: 5px;
@@ -181,7 +178,7 @@
             display: flex;
             align-items: center; /* Center text vertically */
             justify-content: flex-start; /* Start from left */
-            padding: 0 0.5rem; /* Inner padding */
+            padding: 0 0.5rem;
             box-sizing: border-box;
         }
 
@@ -190,9 +187,9 @@
             font-family: var(--font-display); /* Monospaced font */
             color: var(--card-bg-color); /* Brand white */
             font-size: 1.2em;
-            position: absolute; /* Positioned for scrolling */
+            position: absolute;
             left: 0;
-            animation: none; /* Controlled by JS, not CSS keyframes initially */
+            animation: none;
         }
 
         /* Animation for seeking effect on display text */
@@ -216,7 +213,7 @@
             width: 100%;
         }
         .radio-controls-grid > * {
-            place-self: center; /* Horizontally and vertically center grid items */
+            place-self: center;
         }
 
         .radio-component {
@@ -235,36 +232,41 @@
 
         /* Volume Dial */
         .volume-component {
-            grid-column: 1; /* First column */
-            height: 120px; /* Overall height for the component */
-            justify-content: center; /* Center content vertically */
-            position: relative; /* For volume track positioning */
-            padding-bottom: 25px; /* Adjust for label underneath */
+            grid-column: 1;
+            height: 120px;
+            justify-content: center;
+            position: relative;
             box-sizing: border-box;
+            flex-direction: column-reverse; /* Puts label below input */
         }
+        .volume-component .dial-label {
+             margin-top: 0; /* Reset previous margin-top */
+             margin-bottom: 0.5rem; /* Space between label and input */
+        }
+
 
         .volume-component input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
-            width: 100px; /* This becomes height when rotated */
-            height: 20px; /* This becomes width when rotated (thickness of thumb area) */
-            background: transparent; /* Hide default track */
+            width: 100px;
+            height: 20px;
+            background: transparent;
             cursor: pointer;
             outline: none;
-            transform: rotate(-90deg); /* Make it vertical */
-            margin: 0; /* Reset margins */
-            position: relative; /* For thumb positioning relative to rotated element */
-            z-index: 2; /* Ensure slider thumb is above track */
+            transform: rotate(-90deg);
+            margin: 0;
+            position: relative;
+            z-index: 2;
         }
         .volume-component input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 28px; /* Size of the knob */
+            width: 28px;
             height: 28px;
             border-radius: 50%;
             background: var(--accent-color);
-            border: 3px solid var(--card-bg-color); /* Inner ring */
-            box-shadow: 0 0 0 3px var(--accent-color); /* Outer ring */
+            border: 3px solid var(--card-bg-color);
+            box-shadow: 0 0 0 3px var(--accent-color);
             transition: background .3s ease;
         }
         .volume-component input[type="range"]::-moz-range-thumb {
@@ -280,14 +282,14 @@
         /* Volume Track Background */
         .volume-component .volume-track {
             position: absolute;
-            width: 6px; /* Thickness of the track */
-            height: 100px; /* Length of the track */
-            background: #bbb; /* Track color */
+            width: 6px;
+            height: 100px;
+            background: #bbb;
             border-radius: 3px;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 1; /* Below the slider thumb */
+            z-index: 1;
         }
 
 
@@ -297,7 +299,7 @@
             background:var(--accent-color);color:var(--background-color);
             border:none;cursor:pointer;font-weight:bold;
             font-size:1.5rem;line-height:1;
-            grid-column: 3; /* Center column */
+            grid-column: 3;
         }
         #play-pause.paused::after{content:'►';}
         #play-pause.playing::after{content:'❚❚';}
@@ -325,29 +327,29 @@
         .freq-component {
             grid-column: 5;
             display: flex;
-            flex-direction: column; /* Dial on top, label below */
+            flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
         #tuning-dial {
-            width: 60px; /* Size of the circular dial */
+            width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: #e0e0e0; /* Light grey dial base */
+            background: #e0e0e0;
             border: 2px solid var(--accent-color);
             position: relative;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.1s ease; /* For hover */
+            transition: transform 0.1s ease;
         }
 
         #tuning-dial:hover {
             transform: scale(1.05);
         }
-        #tuning-dial.seeking { /* For animation when clicked */
+        #tuning-dial.seeking {
             animation: dialTurn 0.3s ease-out forwards;
         }
         @keyframes dialTurn {
@@ -361,9 +363,9 @@
             height: 0;
             border-left: 8px solid transparent;
             border-right: 8px solid transparent;
-            border-bottom: 12px solid var(--accent-color); /* Triangle pointing up */
+            border-bottom: 12px solid var(--accent-color);
             position: absolute;
-            top: 5px; /* Position at the top of the dial */
+            top: 5px;
         }
 
 
@@ -371,18 +373,26 @@
         .tool-badges img {
             height: 30px;
             margin: 5px;
-            border-radius: 4px; /* if using actual badge images */
+            border-radius: 4px;
         }
-        .tool-badges span { /* For text based badges */
+        .tool-badges span {
             background-color: var(--card-bg-color);
             padding: 5px 10px;
             border-radius: 5px;
             margin: 5px; display: inline-block;
             border: 1px solid var(--accent-color);
+            transition: background-color .3s ease, color .3s ease, border-color .3s ease; /* For hover */
         }
-        .tool-badges h4{
+        .tool-badges span:hover {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color); /* Maintain border visibility */
+        }
+
+        /* Changed h4 to h3 for proper section heading */
+        .tool-badges h3{ /* Updated selector */
             margin:1.2rem 0 0.4rem;
-            font-size:0.95rem;
+            font-size:1.15rem; /* Slightly larger than before to be more like a sub-heading */
             font-weight:700;
             color:var(--accent-color);
         }
@@ -407,7 +417,7 @@
             border-top: 1px solid #222;
         }
         #easter-egg {
-            cursor: help; /* Subtle hint */
+            cursor: help;
             text-decoration: underline dotted;
         }
 
@@ -439,7 +449,7 @@
             animation:fadeIn 1s ease-out .3s forwards;
         }
         .landing-nav{
-            margin-top:0.15rem;      /* tighter spacing below logo */
+            margin-top:0.15rem;
             display:flex;
             gap:2rem;
             justify-content:center;
@@ -465,11 +475,11 @@
           #portfolio-grid  {grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
           .portfolio-intro {font-size:.9rem; text-align:center;}
           .radio-controls-grid {
-              grid-template-columns: 1fr 1fr 1fr; /* Simplified for smaller screens */
+              grid-template-columns: 1fr 1fr 1fr;
               gap: 0.5rem;
           }
           .volume-component, .freq-component {
-              grid-column: span 1; /* Allow them to wrap */
+              grid-column: span 1;
               margin: auto;
           }
           #play-pause, #seek-left, #seek-right {
@@ -512,7 +522,8 @@
                  class="logo" />
             <nav class="landing-nav">
                 <a href="#portfolio" class="landing-link">Editorial</a>
-                <a href="#radio-section" class="landing-link">Obscura rAIdio</a> <!-- Updated link -->
+                <a href="#radio-section" class="landing-link">Obscura rAIdio</a>
+                <a href="#tools-section" class="landing-link">Tools</a> <!-- New link for tools section -->
                 <a href="#contact-section" class="landing-link">Contact</a>
             </nav>
         </div>
@@ -538,11 +549,9 @@
         <!-- Obscura rAIdio section -->
         <section id="radio-section" class="container">
             <div class="section-content">
-                <img src="/logo/raidio.svg" alt="Obscura rAIdio Logo" class="radio-logo"> <!-- Logo added here -->
-                <p class="radio-description">
-                    Sounds for the liminal space. Tune in to explore frequencies beyond.
-                </p>
-                <div id="radio-block"> <!-- This is now the "inner" card styling -->
+                <img src="/logo/raidio.svg" alt="Obscura rAIdio Logo" class="radio-logo">
+                <!-- Removed "Sounds for the liminal space." paragraph -->
+                <div id="radio-block">
                     <div id="radio-display-container">
                         <div id="radio-display"></div>
                     </div>
@@ -550,8 +559,8 @@
                     <div class="radio-controls-grid">
                         <div class="radio-component volume-component">
                             <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" aria-label="Volume dial">
-                            <div class="volume-track"></div> <!-- New element for the track visual -->
-                            <label for="volume-slider" class="dial-label">VOL</label> <!-- Label below dial -->
+                            <div class="volume-track"></div>
+                            <label for="volume-slider" class="dial-label">VOL</label>
                         </div>
 
                         <button id="seek-left" class="seek-button" aria-label="Seek previous station">◀◀</button>
@@ -564,10 +573,43 @@
                             <div id="tuning-dial" role="button" aria-label="Tuning dial, click to change station">
                                 <span class="dial-arrow"></span>
                             </div>
-                            <span class="dial-label" id="band-label">FREQ</span> <!-- Label for the dial, was band-label -->
+                            <span class="dial-label" id="band-label">FREQ</span>
                         </div>
                     </div>
                     <audio id="radio-audio" preload="metadata"></audio>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Tools Section -->
+        <section id="tools-section" class="container">
+            <div class="section-content">
+                <h2>Tools We Love / Are Cautiously Experimenting With</h2>
+                <div class="tool-badges">
+                    <h3>Video & Streaming</h3>
+                    <span title="Industry-standard video editing software.">Premiere</span>
+                    <span title="Advanced motion graphics and visual effects.">After Effects</span>
+                    <span title="Free and open-source software for video recording and live streaming.">OBS</span>
+                    
+                    <h3>AI Creative</h3>
+                    <span title="Powerful large language model by OpenAI for text generation.">ChatGPT</span>
+                    <span title="Google's family of generative AI models.">Gemini</span>
+                    <span title="AI image generation from text prompts.">Midjourney</span>
+                    <span title="OpenAI's text-to-video AI model.">Sora</span>
+                    <span title="Adobe's generative AI tools for images and text effects.">Firefly</span>
+                    <span title="AI video generation and editing tools.">RunwayML</span>
+                    <span title="AI music generation from text.">Suno</span>
+
+                    <h3>3D & Interactive</h3>
+                    <span title="Real-time 3D development platform for games, simulations, and more.">Unity</span>
+                    <span title="Free and open-source 3D creation suite.">Blender</span>
+                    <span title="AI platform for generating 3D models and environments from videos.">Luma AI</span>
+                    <span title="Software for 3D printing preparation and control.">BambuStudio</span>
+
+                    <h3>Imaging & Design</h3>
+                    <span title="Adobe's industry-standard image manipulation software.">Photoshop</span>
+                    <span title="Vector graphics software for logos, icons, and illustrations.">Illustrator</span>
+                    <span title="Image organization and raw photo editing software.">Lightroom</span>
                 </div>
             </div>
         </section>
@@ -587,31 +629,6 @@
                             LinkedIn
                         </a>
                     </p>
-                </div>
-
-                <h3>Tools We Love</h3>
-                <div class="tool-badges">
-                    <h4>Video & Streaming</h4>
-                    <span>OBS</span>
-                    <span>Premiere</span>
-                    <span>After Effects</span>
-                    <h4>AI Creative</h4>
-                    <span>ChatGPT</span>
-                    <span>Gemini</span>
-                    <span>Midjourney</span>
-                    <span>Sora</span>
-                    <span>Firefly</span>
-                    <span>RunwayML</span>
-                    <span>Suno</span>
-                    <h4>3D & Interactive</h4>
-                    <span>Unity</span>
-                    <span>Blender</span>
-                    <span>Luma AI</span>
-                    <span>BambuStudio</span>
-                    <h4>Imaging & Design</h4>
-                    <span>Photoshop</span>
-                    <span>Illustrator</span>
-                    <span>Lightroom</span>
                 </div>
             </div>
         </section>
@@ -841,114 +858,153 @@
             const playBtn     = document.getElementById('play-pause');
             const seekLeftBtn = document.getElementById('seek-left');
             const seekRightBtn= document.getElementById('seek-right');
-            const bandLbl     = document.getElementById('band-label'); // "FREQ" label below tuning dial
-            const radioDisplay= document.getElementById('radio-display'); // New scrolling text display
-            const tuningDial  = document.getElementById('tuning-dial'); // The clickable frequency dial
+            const bandLbl     = document.getElementById('band-label');
+            const radioDisplay= document.getElementById('radio-display');
+            const tuningDial  = document.getElementById('tuning-dial');
             const volSl       = document.getElementById('volume-slider');
 
             if (!audio || !playBtn || !seekLeftBtn || !seekRightBtn || !bandLbl || !radioDisplay || !tuningDial || !volSl) return;
 
-            // Define ad bumper tracks once
+            // Define ad bumper tracks with durations (in seconds)
             const ADS = [
-                { title: 'Ad Spot 01', url: '/audio/ads/Ad01.mp3' },
-                { title: 'Ad Spot 02', url: '/audio/ads/Ad02.mp3' },
-                { title: 'Ad Spot 03', url: '/audio/ads/Ad03.mp3' }
+                { title: 'Ad Spot 01', url: '/audio/ads/Ad01.mp3', duration: 15 },
+                { title: 'Ad Spot 02', url: '/audio/ads/Ad02.mp3', duration: 10 },
+                { title: 'Ad Spot 03', url: '/audio/ads/Ad03.mp3', duration: 20 }
             ];
 
-            // Define the stations
+            // Define the stations with song durations (in seconds)
             const stations = [
                 {
                     name: 'Obscura Talk Radio',
                     frequency: '88.3 AM',
                     type: 'AM',
-                    playlist: [{ title: 'NotebookLM Podcast', url: '/audio/am/NotebookLM-Podcast.mp3' }],
-                    currentTrackIndex: 0,
-                    isPlayingAd: false
+                    playlist: [{ title: 'NotebookLM Podcast', url: '/audio/am/NotebookLM-Podcast.mp3', duration: 1800 }], // 30 minutes
+                    streamHistory: [], // Will be computed for AM as well, effectively one track
+                    cycleDuration: 0,
                 },
                 {
                     name: 'Madness FM',
                     frequency: '103.1 FM',
                     type: 'FM',
-                    playlist: shuffleArray([ // Shuffle this playlist on load
-                        { title:'All Of My Bins',        url:'/audio/fm01/All-Of-My-Bins.mp3' },
-                        { title:'FatRatʼs Saga',         url:'/audio/fm01/FatRats-Saga.mp3' },
-                        { title:'Make the Website',      url:'/audio/fm01/Make-the-Website.mp3' },
-                        { title:'Out Exploring',         url:'/audio/fm01/Out-Exploring.mp3' },
-                        { title:'Slop Slop Slop',        url:'/audio/fm01/Slop-Slop-Slop.mp3' },
-                        { title:'Squallʼs AI Ghul',      url:'/audio/fm01/Squalls-AI-Ghul.mp3' },
-                        { title:'Tell Me',               url:'/audio/fm01/Tell-Me.mp3' },
-                        { title:'Wizard of Moscow',      url:'/audio/fm01/Wizard-of-Moscow.mp3' }
+                    playlist: shuffleArray([
+                        { title:'All Of My Bins', url:'/audio/fm01/All-Of-My-Bins.mp3', duration: 180 },
+                        { title:'FatRatʼs Saga', url:'/audio/fm01/FatRats-Saga.mp3', duration: 210 },
+                        { title:'Make the Website', url:'/audio/fm01/Make-the-Website.mp3', duration: 150 },
+                        { title:'Out Exploring', url:'/audio/fm01/Out-Exploring.mp3', duration: 195 },
+                        { title:'Slop Slop Slop', url:'/audio/fm01/Slop-Slop-Slop.mp3', duration: 200 },
+                        { title:'Squallʼs AI Ghul', url:'/audio/fm01/Squalls-AI-Ghul.mp3', duration: 170 },
+                        { title:'Tell Me', url:'/audio/fm01/Tell-Me.mp3', duration: 160 },
+                        { title:'Wizard of Moscow', url:'/audio/fm01/Wizard-of-Moscow.mp3', duration: 220 }
                     ]),
-                    adPlaylist: shuffleArray([...ADS]), // Shuffle ads too, copy to avoid modifying original ADS
-                    currentTrackIndex: 0,
-                    currentAdIndex: 0,
-                    isPlayingAd: false
+                    adPlaylist: shuffleArray([...ADS]),
+                    streamHistory: [],
+                    cycleDuration: 0,
                 },
                 {
                     name: 'Unhinged FM',
                     frequency: '98.9 FM',
                     type: 'FM',
-                    playlist: shuffleArray([ // Shuffle this playlist on load
-                        { title:'Distracted by Skeletons', url:'/audio/fm02/Distracted-by-Skeletons.mp3' },
-                        { title:'Fractals',                url:'/audio/fm02/Fractals.mp3' },
-                        { title:'Good Game!',              url:'/audio/fm02/Good-Game.mp3' },
-                        { title:'Missing You (Cover)',     url:'/audio/fm02/Missing-You.mp3' },
-                        { title:'Obscura Sonnet',          url:'/audio/fm02/Obscura-Sonnet.mp3' },
-                        { title:'Prism',                   url:'/audio/fm02/Prism.mp3' },
-                        { title:'Puppet',                  url:'/audio/fm02/Puppet.mp3' },
-                        { title:'Quiet Anvil',             url:'/audio/fm02/Quiet-Anvil.mp3' },
-                        { title:'Too Far Apart',           url:'/audio/fm02/Too-Far-Apart.mp3' },
-                        { title:'Why Do You Look Like a Dragon', url:'/audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3' }
+                    playlist: shuffleArray([
+                        { title:'Distracted by Skeletons', url:'/audio/fm02/Distracted-by-Skeletons.mp3', duration: 165 },
+                        { title:'Fractals', url:'/audio/fm02/Fractals.mp3', duration: 205 },
+                        { title:'Good Game!', url:'/audio/fm02/Good-Game.mp3', duration: 190 },
+                        { title:'Missing You (Cover)', url:'/audio/fm02/Missing-You.mp3', duration: 230 },
+                        { title:'Obscura Sonnet', url:'/audio/fm02/Obscura-Sonnet.mp3', duration: 175 },
+                        { title:'Prism', url:'/audio/fm02/Prism.mp3', duration: 140 },
+                        { title:'Puppet', url:'/audio/fm02/Puppet.mp3', duration: 185 },
+                        { title:'Quiet Anvil', url:'/audio/fm02/Quiet-Anvil.mp3', duration: 215 },
+                        { title:'Too Far Apart', url:'/audio/fm02/Too-Far-Apart.mp3', duration: 155 },
+                        { title:'Why Do You Look Like a Dragon', url:'/audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3', duration: 240 }
                     ]),
-                    adPlaylist: shuffleArray([...ADS]), // Shuffle ads too
-                    currentTrackIndex: 0,
-                    currentAdIndex: 0,
-                    isPlayingAd: false
+                    adPlaylist: shuffleArray([...ADS]),
+                    streamHistory: [],
+                    cycleDuration: 0,
                 }
             ];
 
-            let currentStationIndex = 0; // Start with the first station (Obscura Talk Radio)
+            // Pre-compute stream history for each station
+            stations.forEach(station => {
+                let currentAccumulatedDuration = 0;
+                if (station.type === 'AM') {
+                    const track = station.playlist[0];
+                    station.streamHistory.push({
+                        track: track,
+                        start: 0,
+                        end: track.duration,
+                        isAd: false
+                    });
+                    currentAccumulatedDuration = track.duration;
+                } else { // FM stations: interleave songs and ads
+                    const maxLength = Math.max(station.playlist.length, station.adPlaylist.length);
+                    for (let i = 0; i < maxLength; i++) {
+                        if (i < station.playlist.length) {
+                            const song = station.playlist[i];
+                            station.streamHistory.push({
+                                track: song,
+                                start: currentAccumulatedDuration,
+                                end: currentAccumulatedDuration + song.duration,
+                                isAd: false
+                            });
+                            currentAccumulatedDuration += song.duration;
+                        }
+                        if (i < station.adPlaylist.length) {
+                            const ad = station.adPlaylist[i];
+                            station.streamHistory.push({
+                                track: ad,
+                                start: currentAccumulatedDuration,
+                                end: currentAccumulatedDuration + ad.duration,
+                                isAd: true
+                            });
+                            currentAccumulatedDuration += ad.duration;
+                        }
+                    }
+                }
+                station.cycleDuration = currentAccumulatedDuration;
+            });
+
+            let currentStationIndex = 0;
             let scrollAnimationId; // To control requestAnimationFrame for scrolling text
 
             // Function to start and manage the scrolling text
             function startScrolling(element, text) {
                 cancelAnimationFrame(scrollAnimationId); // Stop any existing animation
                 
-                // Duplicate the text for seamless looping. Add some spaces in between.
-                element.textContent = text + '       ' + text;
+                // Add a buffer of spaces to make the loop look natural.
+                // Using zero-width space + normal space for better control without changing font.
+                const buffer = '        '; // A few spaces for separation
+                element.innerHTML = text + buffer + text; // Duplicate text with buffer
                 element.style.transform = 'translateX(0)'; // Reset position
 
-                setTimeout(() => { // Small delay to ensure content width is calculated after DOM update
-                    const containerWidth = element.parentElement.offsetWidth - (parseFloat(getComputedStyle(element.parentElement).paddingLeft) * 2); // Calculate inner width
-                    const textContentWidth = element.scrollWidth / 2; // Width of one instance of the duplicated text
-                    const gap = 30; // pixels of gap before repeating text (this will be handled by added spaces)
+                // Set a timeout to allow the browser to render the content and determine scrollWidth
+                setTimeout(() => {
+                    const containerWidth = element.parentElement.clientWidth;
+                    const contentWidth = element.scrollWidth / 2; // Width of one instance of the duplicated content
 
-                    if (textContentWidth > containerWidth) { // Only scroll if content is wider than container
-                        let currentPosition = 0;
+                    if (contentWidth > containerWidth) { // Only scroll if content is wider than container
+                        let currentPos = 0;
                         const scrollSpeed = 0.5; // pixels per frame
 
-                        function animateScroll() {
-                            currentPosition -= scrollSpeed;
-                            if (currentPosition <= -(textContentWidth + gap)) {
-                                currentPosition = 0; // Reset to start of first copy
+                        function animate() {
+                            currentPos -= scrollSpeed;
+                            // Reset position when the first copy (plus buffer) has scrolled past the left edge
+                            if (currentPos <= -(contentWidth + (buffer.length * element.clientWidth / text.length))) { // Adjust based on character width
+                                currentPos = 0; // Reset to start of first copy
                             }
-                            element.style.transform = `translateX(${currentPosition}px)`;
-                            scrollAnimationId = requestAnimationFrame(animateScroll);
+                            element.style.transform = `translateX(${currentPos}px)`;
+                            scrollAnimationId = requestAnimationFrame(animate);
                         }
-                        scrollAnimationId = requestAnimationFrame(animateScroll);
+                        scrollAnimationId = requestAnimationFrame(animate);
                     } else {
-                        element.style.transform = 'translateX(0)'; // No need to scroll, center if preferred
-                        element.textContent = text; // Revert to single text if not scrolling
-                        // If you want to center text when it doesn't scroll, you'd apply CSS to #radio-display-container and not position #radio-display absolutely here.
+                        element.style.transform = 'translateX(0)';
+                        element.innerHTML = text; // If no scrolling, just show the single text without duplication
                     }
-                }, 100);
+                }, 50); // Small delay to ensure accurate scrollWidth calculation
             }
-
 
             function updateDisplay(station, track, seekAction = false) {
                 const fullDisplayString = `${station.frequency} ${station.name}: ${track.title}`;
-                bandLbl.textContent = "FREQ"; // Keep fixed "FREQ" label
-                
+                bandLbl.textContent = "FREQ"; // Permanent label for the dial
+
                 if (seekAction) {
                     radioDisplay.textContent = 'SEEKING...'; // Show seeking message
                     cancelAnimationFrame(scrollAnimationId); // Stop current scroll
@@ -966,55 +1022,45 @@
             }
 
             function playCurrentTrackOfStation(station, seekAction = false) {
-                let trackToPlay;
+                const nowInSeconds = Date.now() / 1000;
+                const streamPositionInCycle = nowInSeconds % station.cycleDuration;
 
-                if (station.type === 'AM') {
-                    // AM has only one track that loops
-                    trackToPlay = station.playlist[0];
-                    station.isPlayingAd = false; // Ensure AM always plays its main content
-                } else { // FM stations
-                    if (station.isPlayingAd) {
-                        trackToPlay = station.adPlaylist[station.currentAdIndex % station.adPlaylist.length];
-                    } else {
-                        trackToPlay = station.playlist[station.currentTrackIndex % station.playlist.length];
+                let currentTrackObject = null;
+                let audioPlaybackTime = 0;
+
+                for (const segment of station.streamHistory) {
+                    if (streamPositionInCycle >= segment.start && streamPositionInCycle < segment.end) {
+                        currentTrackObject = segment.track;
+                        audioPlaybackTime = streamPositionInCycle - segment.start;
+                        break;
                     }
                 }
 
-                updateDisplay(station, trackToPlay, seekAction);
+                // Fallback if no segment found (shouldn't happen with correct data)
+                if (!currentTrackObject) {
+                    currentTrackObject = station.streamHistory[0].track; // Default to first track
+                    audioPlaybackTime = 0;
+                }
 
-                audio.src = trackToPlay.url;
+                updateDisplay(station, currentTrackObject, seekAction);
+
+                audio.src = currentTrackObject.url;
                 audio.onloadedmetadata = () => {
-                    audio.currentTime = 0; // Always start at the beginning
+                    audio.currentTime = audioPlaybackTime;
+                    if (playBtn.classList.contains('playing')) {
+                        audio.play().catch(e => console.warn("Autoplay prevented:", e));
+                    }
                 };
 
-                if (playBtn.classList.contains('playing')) {
-                     audio.play().catch(e => console.warn("Autoplay prevented:", e));
-                } else {
+                if (!playBtn.classList.contains('playing')) {
                     audio.load(); // Preload even if paused
                 }
             }
 
-            // Handles logic for when a track ends
+            // Handles logic for when a track ends (re-evaluates current stream position)
             audio.addEventListener('ended', () => {
                 const currentStation = stations[currentStationIndex];
-
-                if (currentStation.type === 'AM') {
-                    // AM podcast just restarts/loops
-                    playCurrentTrackOfStation(currentStation);
-                } else { // FM stations
-                    if (currentStation.isPlayingAd) {
-                        // Ad just finished, play next song
-                        currentStation.isPlayingAd = false;
-                        currentStation.currentTrackIndex = (currentStation.currentTrackIndex + 1) % currentStation.playlist.length;
-                        playCurrentTrackOfStation(currentStation);
-                    } else {
-                        // Song just finished, play next ad
-                        currentStation.isPlayingAd = true;
-                        currentStation.currentAdIndex = (currentStation.currentAdIndex + 1) % currentStation.adPlaylist.length;
-                        playCurrentTrackOfStation(currentStation);
-                    }
-                }
-                audio.play().catch(e => console.warn("Autoplay prevented after track ended:", e));
+                playCurrentTrackOfStation(currentStation); // Re-calculate and play what's next in the stream
             });
 
             /* Play / pause button */
@@ -1045,19 +1091,41 @@
                 tuningDial.addEventListener('animationend', function handler() {
                     tuningDial.classList.remove('seeking');
                     this.removeEventListener('animationend', handler);
-                });
+                }, { once: true });
 
-                // Reset state for new station before playing
+                // Re-shuffle playlists for FM stations when seeking to them
                 const newStation = stations[currentStationIndex];
                 if (newStation.type === 'FM') {
-                    newStation.isPlayingAd = false; // When seeking to FM, always start with a song
-                    // Reset indices for the new station and reshuffle playlists
-                    newStation.currentTrackIndex = 0;
-                    newStation.currentAdIndex = 0;
                     shuffleArray(newStation.playlist);
                     shuffleArray(newStation.adPlaylist);
+                    // Re-compute stream history after shuffling
+                    let currentAccumulatedDuration = 0;
+                    newStation.streamHistory = [];
+                    const maxLength = Math.max(newStation.playlist.length, newStation.adPlaylist.length);
+                    for (let i = 0; i < maxLength; i++) {
+                        if (i < newStation.playlist.length) {
+                            const song = newStation.playlist[i];
+                            newStation.streamHistory.push({
+                                track: song,
+                                start: currentAccumulatedDuration,
+                                end: currentAccumulatedDuration + song.duration,
+                                isAd: false
+                            });
+                            currentAccumulatedDuration += song.duration;
+                        }
+                        if (i < newStation.adPlaylist.length) {
+                            const ad = newStation.adPlaylist[i];
+                            newStation.streamHistory.push({
+                                track: ad,
+                                start: currentAccumulatedDuration,
+                                end: currentAccumulatedDuration + ad.duration,
+                                isAd: true
+                            });
+                            currentAccumulatedDuration += ad.duration;
+                        }
+                    }
+                    newStation.cycleDuration = currentAccumulatedDuration;
                 }
-                // AM already handles looping and doesn't have ads.
 
                 playCurrentTrackOfStation(newStation, true); // True indicates a seek action for animation
             }
