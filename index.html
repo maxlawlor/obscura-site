@@ -918,7 +918,8 @@
                     track = list[songIdx % list.length];
                     updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
                 }
-                audio.src = track.url;
+                // Encode URI to handle spaces or unicode in filenames
+                audio.src = encodeURI(track.url);
                 audio.load();
             }
 
@@ -953,7 +954,7 @@
                 tuningDial.classList.add('seeking');
                 tuningDial.addEventListener('animationend',()=>tuningDial.classList.remove('seeking'),{once:true});
                 loadTrack();
-                if(!audio.paused) audio.play();
+                audio.play().catch(()=>{});   // Force resume after station change
             }
             seekLeftBtn.addEventListener('click', ()=>seek(-1));
             seekRightBtn.addEventListener('click',()=>seek(1));
