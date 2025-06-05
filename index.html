@@ -1190,20 +1190,25 @@
                 audio.volume = volSl.valueAsNumber;
             }
             volSl.addEventListener('input', updateVolumeSlider);
-            // Touch support for mobile volume slider
+            // Improved touch support for mobile volume slider
+            let isTouchingSlider = false;
+            volSl.addEventListener('touchstart', function(e) {
+                isTouchingSlider = true;
+            });
+            volSl.addEventListener('touchend', function(e) {
+                isTouchingSlider = false;
+            });
             volSl.addEventListener('touchmove', function(e) {
-                // For touchmove, recalculate value based on touch position
-                if (e.touches && e.touches.length > 0) {
-                    const touch = e.touches[0];
-                    const rect = volSl.getBoundingClientRect();
-                    let percent = (touch.clientX - rect.left) / rect.width;
-                    percent = Math.max(0, Math.min(1, percent));
-                    volSl.value = percent;
-                    audio.volume = percent;
-                    // Fire input event for visual feedback if needed
-                    const event = new Event('input', { bubbles: true });
-                    volSl.dispatchEvent(event);
-                }
+                if (!isTouchingSlider || e.touches.length === 0) return;
+                const touch = e.touches[0];
+                const rect = volSl.getBoundingClientRect();
+                let percent = (touch.clientX - rect.left) / rect.width;
+                percent = Math.max(0, Math.min(1, percent));
+                volSl.value = percent;
+                audio.volume = percent;
+                // Fire input event for visual feedback if needed
+                const event = new Event('input', { bubbles: true });
+                volSl.dispatchEvent(event);
             });
 
 
