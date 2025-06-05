@@ -92,6 +92,11 @@
             margin-top: 6vh; /* Push content down so hero is visible initially */
         }
 
+        /* Reduce top margin specifically for About section */
+        #about .section-content {
+            margin-top: 2rem;
+        }
+
         /* Portfolio Section */
         #portfolio-grid {
             display: grid;
@@ -549,7 +554,7 @@
                 <a href="#portfolio" class="landing-link">Editorial</a>
                 <a href="#radio-section" class="landing-link">Generative AI</a>
                 <a href="#about" class="landing-link">About</a>
-                <a href="#contact-section" class="landing-link">Connect</a>
+                <a href="#about" class="landing-link">Connect</a>
             </nav>
         </div>
     </section>
@@ -608,48 +613,39 @@
                 <h2>About Obscura</h2>
                 <p>Obscura specializes in cutting-edge video editing, motion graphics, and generative AI. We’re obsessed with the future, the past, and the space where creativity meets technology. Also: high standards. And irreverence. That’s part of it too.</p>
 
-                <!-- Tools We Love section (freshest first, compact) -->
-                <div id="tools-section" class="container" style="padding:0; min-height:unset;">
-                  <div class="section-content" style="box-shadow:none; border-radius:0; background:none; padding-top:0;">
-                    <h2>Tools&nbsp;We&nbsp;Love&nbsp;<span style="font-weight:400;">(freshest&nbsp;first)</span></h2>
-                    <div class="tool-badges">
-                      <span>Sora</span>
-                      <span>Firefly</span>
-                      <span>Suno</span>
-                      <span>Luma&nbsp;AI</span>
-                      <span>RunwayML</span>
-                      <span>Midjourney</span>
-                      <span>Gemini</span>
-                      <span>ChatGPT</span>
-                      <span>BambuStudio</span>
-                      <span>Unity</span>
-                      <span>Blender</span>
-                      <span>Premiere</span>
-                      <span>After&nbsp;Effects</span>
-                      <span>OBS</span>
-                      <span>Photoshop</span>
-                      <span>Illustrator</span>
-                      <span>Lightroom</span>
-                      <span>Clocks</span>
-                      <span>Sundials</span>
-                      <span>Watches</span>
-                    </div>
-                  </div>
+                <!-- Tools We Love -->
+                <h2>Tools&nbsp;We&nbsp;Love&nbsp;<span style="font-weight:400;">(in&nbsp;order&nbsp;of&nbsp;freshness)</span></h2>
+                <div class="tool-badges">
+                  <span title="2024">Sora</span>
+                  <span title="2023">Firefly</span>
+                  <span title="2023">Suno</span>
+                  <span title="2022">Luma&nbsp;AI</span>
+                  <span title="2018">RunwayML</span>
+                  <span title="2022">Midjourney</span>
+                  <span title="2023">Gemini</span>
+                  <span title="2022">ChatGPT</span>
+                  <span title="2022">BambuStudio</span>
+                  <span title="2005">Unity</span>
+                  <span title="1998">Blender</span>
+                  <span title="1991">Premiere</span>
+                  <span title="1993">After&nbsp;Effects</span>
+                  <span title="2012">OBS</span>
+                  <span title="1990">Photoshop</span>
+                  <span title="1987">Illustrator</span>
+                  <span title="2007">Lightroom</span>
+                  <span title="1300">Clocks</span>
+                  <span title="−1500">Sundials</span>
+                  <span title="1510">Watches</span>
                 </div>
 
-                <!-- Contact section moved below -->
+                <h3>Let’s&nbsp;Talk!</h3>
+                <p class="contact-links">
+                  Got a bunch of footage that needs to become a thing? That’s our thing.<br><br>
+                  We also specialize in generative AI, which, let’s be honest, might just be <em>the</em> thing.<br><br>
+                  Email:<br>
+                  <a href="mailto:max@obscura.life">max@obscura.life</a>
+                </p>
             </div>
-        </section>
-
-        <section id="contact-section" class="container">
-          <div class="section-content">
-            <h2>Let’s&nbsp;Talk!</h2>
-            <p class="contact-links">
-              Got a bunch of footage that needs to become a thing? That’s our thing.<br><br>
-              We also specialize in generative AI, which, let’s be honest, might just be <em>the</em> thing.<br><br>
-              Email: <a href="mailto:max@obscura.life">max@obscura.life</a>
-            </p>
-          </div>
         </section>
     </main>
 
