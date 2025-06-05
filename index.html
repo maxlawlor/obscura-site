@@ -99,7 +99,7 @@
 
         @media (min-width: 601px) {
           #about {
-            margin-top: -3rem;
+            margin-top: -6rem; /* tighter gap to match other sections */
           }
         }
 
@@ -497,14 +497,17 @@
           #portfolio-grid  {grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
           /* No longer needed after removing .portfolio-intro */
 
-          .radio-controls-grid {
-              grid-template-columns: 1fr 1fr 1fr; /* Updated to 3 columns */
-              gap: 0.5rem;
-              /* Define mobile grid areas */
-              grid-template-areas:
-                  "volume-area volume-area mute-area"
-                  "seek-left-area freq-area seek-right-area";
+          /* Hide volume slider and seek buttons on mobile; simplify layout */
+          .volume-component,
+          .seek-button {
+              display: none !important;
           }
+          .radio-controls-grid {
+              grid-template-columns: 1fr 1fr;
+              grid-template-areas:
+                  "mute-area freq-area";
+          }
+
           /* Re-assign grid columns based on new grid areas for mobile */
           .volume-component {
               grid-area: volume-area;
