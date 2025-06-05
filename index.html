@@ -39,6 +39,7 @@
             --font-sans: "Red Hat Display", system-ui, sans-serif;
             --font-display: "VT323", monospace; /* New font for radio display */
             --marquee-duration: 10s; /* Default for radio display scrolling */
+            --font-serif: "Red Hat Display", system-ui, sans-serif;  /* fallback – heading var was undefined */
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -89,18 +90,7 @@
             padding: 2rem;
             border-radius: var(--border-radius-xl);
             box-shadow: var(--soft-shadow);
-            margin-top: 6vh; /* Push content down so hero is visible initially */
-        }
-
-        /* Reduce top margin specifically for About section */
-        #about .section-content {
-            margin-top: 6vh; /* match other sections */
-        }
-
-        @media (min-width: 601px) {
-          #about {
-            margin-top: 0; /* reset */
-          }
+            margin-top: 0; /* consistent spacing — rely on section padding */
         }
 
         /* Portfolio Section */
@@ -558,6 +548,12 @@
             from{opacity:0;}
             to  {opacity:1;}
         }
+
+        /* Prevent overflow of mobile badge descriptions */
+        .tool-desc{
+            max-width:90vw;
+            word-wrap:break-word;
+        }
     </style>
     <script type="application/ld+json">
     {
@@ -586,10 +582,11 @@
             <img src="/logo/Obscura-logo.svg"
                  alt="Obscura"
                  class="logo" />
-            <nav class="landing-nav">
-                <a href="#portfolio" class="landing-link">Editorial</a>
-                <a href="#radio-section" class="landing-link">Generative AI</a>
-                <a href="#about" class="landing-link">About</a>
+            <nav class="landing-nav" role="navigation">
+                <a href="#portfolio"      class="landing-link">Editorial</a>
+                <a href="#radio-section"  class="landing-link">Generative AI</a>
+                <a href="#connect"        class="landing-link">Connect</a>
+                <a href="#about"          class="landing-link">About</a>
             </nav>
         </div>
     </section>
@@ -632,7 +629,7 @@
                         <button id="seek-right" class="seek-button" aria-label="Seek next station">▶▶</button>
 
                         <div class="radio-component freq-component">
-                            <div id="tuning-dial" role="button" aria-label="Tuning dial, click to change station">
+                            <div id="tuning-dial" role="button" aria-label="Tuning dial, click to change station" tabindex="0">
                                 <span class="dial-arrow"></span>
                             </div>
                             <span class="dial-label" id="band-label">FREQ</span>
@@ -641,6 +638,18 @@
                     <audio id="radio-audio" preload="metadata"></audio>
                 </div>
             </div>
+        </section>
+
+        <!-- Connect section -->
+        <section id="connect" class="container">
+          <div class="section-content">
+            <h2>Connect</h2>
+            <p class="contact-links">
+              Got a bunch of footage that needs to become a thing? That’s our thing.  
+              We also play around with generative AI, which, let’s be honest, might just be <em>the</em> thing.<br><br>
+              Email: <a href="mailto:max@obscura.life">max@obscura.life</a>
+            </p>
+          </div>
         </section>
 
         <section id="about" class="container">
@@ -676,12 +685,6 @@
                   <span title="~1500 BC – It’s cool that you can just use a shadow to tell the time. I just think it’s neat. Fight me.">Sundials<small>~1500 BC</small></span>
                   <span title="~2600 BC – Makes sense these were invented so long ago. Standing is good but sometimes you just need to sit.">Chairs<small>~2600 BC</small></span>
                 </div>
-
-                <h2>Connect</h2>
-                <p class="contact-links">
-                  Got a bunch of footage that needs to become a thing? That’s our thing. We also play around with generative AI, which, let’s be honest, might just be <em>the</em> thing.<br><br>
-                  Email: <a href="mailto:max@obscura.life">max@obscura.life</a>
-                </p>
             </div>
         </section>
     </main>
@@ -1233,6 +1236,9 @@
             }
             seekLeftBtn.addEventListener('click', ()=>seek(-1));
             tuningDial.addEventListener('click',  ()=>seek(1)); // Tuning dial seeks right
+            tuningDial.addEventListener('keydown', e=>{
+                if (e.key === 'Enter' || e.key === ' ') seek(1);
+            });
             seekRightBtn.addEventListener('click',()=>seek(1));
 
 
