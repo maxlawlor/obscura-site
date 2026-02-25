@@ -1,0 +1,5 @@
+# Obscura – www.obscura.life
+User-agent: *
+Allow: /
+
+Sitemap: https://www.obscura.life/sitemap.xml
