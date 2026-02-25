@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obscura | Video Editing & Generative AI | Toronto — Max Lawlor</title>
+    <title>Obscura | Toronto Post-Production & Video Editing — Max Lawlor</title>
     <!-- Brand fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -563,6 +563,19 @@
             max-width:90vw;
             word-wrap:break-word;
         }
+    
+        /* SEO heading — visible to crawlers, tucked above logo */
+        .site-heading {
+            font-size: 0.01px;
+            line-height: 0;
+            margin: 0;
+            padding: 0;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            position: absolute;
+            white-space: nowrap;
+        }
     </style>
     <script type="application/ld+json">
     {
@@ -605,7 +618,7 @@
     <section id="landing-hero">
         <!-- Sphere canvas removed -->
         <div class="landing-inner">
-            <h1 style="font-size:0;height:0;overflow:hidden;margin:0;padding:0;">Obscura — Toronto Video Editing, Post-Production & Generative AI Studio</h1>
+            <h1 class="site-heading">Obscura — Toronto Video Editing, Post-Production & Generative AI Studio</h1>
             <img src="/logo/Obscura-logo.svg"
                  alt="Obscura"
                  class="logo" />
