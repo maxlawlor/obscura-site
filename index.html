@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet"> <!-- New font for radio display -->
 
 
     <!-- Favicons -->
@@ -46,8 +45,6 @@
             --spectral-gradient: linear-gradient(90deg,
                 hsl(210, 80%, 55%), hsl(220, 80%, 55%), hsl(230, 80%, 55%)); /* cleaned to a blue gradient */
             --font-sans: "Red Hat Display", system-ui, sans-serif;
-            --font-display: "VT323", monospace; /* New font for radio display */
-            --marquee-duration: 10s; /* Default for radio display scrolling */
             --font-serif: "Red Hat Display", system-ui, sans-serif;  /* fallback – heading var was undefined */
         }
 
@@ -139,244 +136,6 @@
             pointer-events:none;
         }
         /* .portfolio-intro { removed } */
-
-
-        /* Obscura rAIdio (Now a full section) */
-        #radio-section .section-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        #radio-block{
-            /* Removed background-color, border-radius, box-shadow to achieve single bounding box (done by .section-content) */
-            padding: 1.5rem;
-            margin-top: 1rem;
-            width: 100%;
-            max-width: 600px; /* Constrain width for radio unit */
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        .radio-logo {
-            width: 200px;
-            height: auto;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        #radio-audio{
-            display:none; /* Hidden controls for true radio feel */
-        }
-
-        /* --- Radio Display (Scrolling Text) --- */
-        #radio-display-container {
-            width: 90%;
-            height: 2.5rem;
-            background-color: var(--background-color); /* Brand yellow */
-            border: 2px solid var(--accent-color); /* Blue border */
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            overflow: hidden; /* Important for scrolling effect */
-            position: relative;
-            display: flex;
-            align-items: center; /* Center text vertically */
-            justify-content: flex-start; /* Start from left */
-            padding: 0 0.5rem;
-            box-sizing: border-box;
-        }
-
-        #radio-display {
-            white-space: nowrap; /* Prevent text wrapping */
-            font-family: var(--font-display); /* Monospaced font for LCD look */
-            color: var(--card-bg-color); /* Brand white */
-            font-size: 1.6em; /* Increased font size */
-            position: absolute;
-            left: 0;
-            animation: none; /* Controlled by JS */
-        }
-
-        /* Animation for seeking effect on display text */
-        @keyframes seekFade {
-            0% { opacity: 1; }
-            50% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-        #radio-display.seek-active {
-            animation: seekFade 0.3s ease-out;
-        }
-
-        /* Marquee Animation for long text */
-        @keyframes marquee {
-            0%   { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        #radio-display.scrolling {
-            animation: marquee var(--marquee-duration) linear infinite;
-        }
-
-
-        /* --- Radio Controls Grid Layout --- */
-        .radio-controls-grid {
-            display: grid;
-            grid-template-columns: 1fr auto auto auto 1fr; /* Volume, Seek, Play/Pause, Seek, Freq */
-            align-items: center;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-            width: 100%;
-            /* Assign grid areas for easier mobile reordering */
-            grid-template-areas:
-                "volume-area seek-left-area mute-area seek-right-area freq-area";
-        }
-        .radio-controls-grid > * {
-            place-self: center;
-        }
-
-        .radio-component {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .dial-label,
-        .volume-component .dial-label {
-            font-weight: 600;
-            user-select: none;
-            color: var(--accent-color);
-            font-size: 0.9em;
-            margin-top: 0.5rem; /* Space between control and label */
-            margin-bottom: 0;
-        }
-
-        /* Volume Dial - NOW HORIZONTAL */
-        .volume-component {
-            grid-area: volume-area;
-            height: auto; /* Adjust height for horizontal layout */
-            width: 100%; /* Take full width of its grid area */
-            flex-direction: column; /* Puts label below input */
-            justify-content: center;
-            position: relative;
-            box-sizing: border-box;
-        }
-
-        .volume-component input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%; /* Fill parent container */
-            height: 8px; /* Thickness of the track */
-            background: #bbb; /* Default track color */
-            border-radius: 4px;
-            cursor: pointer;
-            outline: none;
-            margin: 0;
-            position: relative;
-            z-index: 2;
-        }
-        .volume-component input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            border: 3px solid var(--card-bg-color);
-            box-shadow: 0 0 0 3px var(--accent-color);
-            transition: background .3s ease;
-            margin-top: -10px; /* Adjust to center thumb vertically on track */
-        }
-        .volume-component input[type="range"]::-moz-range-thumb {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            border: 3px solid var(--card-bg-color);
-            box-shadow: 0 0 0 3px var(--accent-color);
-            transition: background .3s ease;
-        }
-        /* No need for .volume-track div anymore as we style the native track */
-        .volume-component .volume-track {
-            display: none; /* Hide the old track div */
-        }
-
-
-        /* Mute/Unmute button */
-        #play-pause{
-            grid-area: mute-area;
-            width:80px;height:50px; /* Adjusted size to fit text */
-            border-radius:8px; /* Square with rounded corners */
-            background:var(--accent-color);color:var(--background-color);
-            border:none;cursor:pointer;font-weight:bold;
-            font-size:1rem;line-height:1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem;
-        }
-
-
-        /* Seek buttons */
-        .seek-button {
-            background-color: var(--accent-color);
-            color: #fff;
-            border: none;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        #seek-left { grid-area: seek-left-area; }
-        #seek-right { grid-area: seek-right-area; }
-
-        .seek-button:hover {
-             background-image: var(--spectral-gradient);
-             color: white;
-        }
-
-        /* Frequency Dial (Round Tuning Dial) */
-        .freq-component {
-            grid-area: freq-area;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #tuning-dial {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            border: 2px solid var(--accent-color);
-            position: relative;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.1s ease;
-        }
-
-        #tuning-dial:hover {
-            transform: scale(1.05);
-        }
-        #tuning-dial.seeking {
-            animation: dialTurn 0.3s ease-out forwards;
-        }
-        @keyframes dialTurn {
-            0%   { transform: rotate(0deg); }
-            50%  { transform: rotate(90deg); } /* Rotates fully in the middle of animation */
-            100% { transform: rotate(0deg); }
-        }
-
-        .dial-arrow {
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 12px solid var(--accent-color);
-            position: absolute;
-            top: 5px;
-        }
 
 
         /* About / Contact */
@@ -496,45 +255,6 @@
           #portfolio-grid  {grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
           /* No longer needed after removing .portfolio-intro */
 
-          /* Hide volume slider and seek buttons on mobile; simplify layout */
-          .volume-component,
-          .seek-button {
-              display: none !important;
-          }
-          .radio-controls-grid {
-              grid-template-columns: 1fr 1fr;
-              grid-template-areas:
-                  "mute-area freq-area";
-          }
-
-          /* Re-assign grid columns based on new grid areas for mobile */
-          .volume-component {
-              grid-area: volume-area;
-              margin: auto 0; /* Adjust margin for horizontal layout */
-              width: 100%;
-          }
-          #play-pause {
-              grid-area: mute-area;
-              margin: auto;
-          }
-          #seek-left {
-              grid-area: seek-left-area;
-              margin: auto;
-          }
-          #seek-right {
-              grid-area: seek-right-area;
-              margin: auto;
-          }
-          .freq-component {
-              grid-area: freq-area;
-              margin: auto;
-          }
-
-          /* Ensure volume slider fills its area properly on mobile */
-          .volume-component input[type="range"] {
-              width: calc(100% - 20px); /* Account for padding/margins */
-              margin: 0 10px; /* Add some horizontal padding */
-          }
         }
 
 
@@ -624,7 +344,7 @@
                  class="logo" />
             <nav class="landing-nav" role="navigation">
                 <a href="#portfolio"      class="landing-link">Editorial</a>
-                <a href="#radio-section"  class="landing-link">Generative AI</a>
+                <span class="landing-link" style="opacity:0.4;cursor:default;">Generative AI</span>
                 <a href="#connect"        class="landing-link">Connect</a>
                 <a href="#about"          class="landing-link">About</a>
             </nav>
@@ -646,39 +366,6 @@
             </div>
         </section>
 
-        <!-- Obscura rAIdio section -->
-        <section id="radio-section" class="container">
-            <div class="section-content">
-                <img src="/logo/raidio.svg" alt="Obscura rAIdio Logo" class="radio-logo">
-                <div id="radio-block">
-                    <div id="radio-display-container">
-                        <div id="radio-display"></div>
-                    </div>
-
-                    <div class="radio-controls-grid">
-                        <div class="radio-component volume-component">
-                            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" aria-label="Volume dial">
-                            <div class="volume-track"></div> <!-- This div is now hidden via CSS -->
-                            <label for="volume-slider" class="dial-label">VOL</label>
-                        </div>
-
-                        <button id="seek-left" class="seek-button" aria-label="Seek previous station">◀◀</button>
-
-                        <button id="play-pause" aria-label="Mute or Unmute Audio"></button>
-
-                        <button id="seek-right" class="seek-button" aria-label="Seek next station">▶▶</button>
-
-                        <div class="radio-component freq-component">
-                            <div id="tuning-dial" role="button" aria-label="Tuning dial, click to change station" tabindex="0">
-                                <span class="dial-arrow"></span>
-                            </div>
-                            <span class="dial-label" id="band-label">FREQ</span>
-                        </div>
-                    </div>
-                    <audio id="radio-audio" preload="metadata"></audio>
-                </div>
-            </div>
-        </section>
 
         <!-- Connect section -->
         <section id="connect" class="container">
@@ -846,15 +533,6 @@
             }
         }
 
-        // Fisher-Yates (Knuth) Shuffle algorithm
-        // If used elsewhere, move to a utilities file/module for reuse.
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
-            }
-            return array;
-        }
 
         // --- INITIALIZATION FUNCTION ---
         async function initializeSite() {
@@ -895,7 +573,6 @@
             // Now that all libraries are guaranteed to be loaded and set up
             initNav();
             initPortfolio();
-            initRadio();
             initFooterEasterEgg();
         }
 
@@ -955,7 +632,7 @@
                             const placeholder = document.createElement('div');
                             placeholder.className = 'placeholder';
                             // Set YouTube thumbnail as background
-                            placeholder.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`;
+                            placeholder.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/maxresdefault.jpg)`;
                             placeholder.setAttribute('role', 'button');
                             placeholder.setAttribute('tabindex', '0');
                             placeholder.setAttribute('aria-label', `Load video ${title}`);
@@ -1005,7 +682,7 @@
             if (!lightbox) return;
             lightboxInner.innerHTML =
                 `<iframe loading="lazy"
-                         src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&mute=0&vq=hd720&rel=0&modestbranding=1&showinfo=0"
+                         src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&mute=0&vq=hd1080&hd=1&rel=0&modestbranding=1"
                          title="${title || 'Obscura video'}"
                          allow="autoplay; accelerometer; encrypted-media; gyroscope; picture-in-picture"
                          allowfullscreen></iframe>`;
@@ -1026,269 +703,6 @@
         }
 
 
-        // --- UPDATED OBSCURA rAIDIO ---
-        async function initRadio() {
-            const audio       = document.getElementById('radio-audio');
-            const playBtn     = document.getElementById('play-pause');
-            const seekLeftBtn = document.getElementById('seek-left');
-            const seekRightBtn= document.getElementById('seek-right');
-            const displayEl   = document.getElementById('radio-display');
-            const tuningDial  = document.getElementById('tuning-dial');
-            const volSl       = document.getElementById('volume-slider');
-            const displayContainer = document.getElementById('radio-display-container'); // For marquee calculations
-
-            if(!audio||!playBtn||!seekLeftBtn||!seekRightBtn||!displayEl||!tuningDial||!volSl) return;
-
-            /* Playlists */
-            const AM  = [{ title:'NotebookLM Podcast', url:'audio/am/NotebookLM-Podcast.mp3' }];
-            const FM1 = [
-                { title:'All Of My Bins', url:'audio/fm01/All-Of-My-Bins.mp3' },
-                { title:'FatRatʼs Saga', url:'audio/fm01/FatRats-Saga.mp3' },
-                { title:'Make the Website', url:'audio/fm01/Make-the-Website.mp3' },
-                { title:'Out Exploring', url:'audio/fm01/Out-Exploring.mp3' },
-                { title:'Slop Slop Slop', url:'audio/fm01/Slop-Slop-Slop.mp3' },
-                { title:'Tell Me', url:'audio/fm01/Tell-Me.mp3' },
-                { title:'Wizard of Moscow', url:'audio/fm01/Wizard-of-Moscow.mp3' }
-            ];
-            const FM2 = [
-                { title:'Distracted by Skeletons', url:'audio/fm02/Distracted-by-Skeletons.mp3' },
-                { title:'Good Game!', url:'audio/fm02/Good-Game.mp3' },
-                { title:'Missing You (Cover)', url:'audio/fm02/Missing-You.mp3' },
-                { title:'Obscura Sonnet', url:'audio/fm02/Obscura-Sonnet.mp3' },
-                { title:'Prism', url:'audio/fm02/Prism.mp3' },
-                { title:'Puppet', url:'audio/fm02/Puppet.mp3' },
-                { title:'Quiet Anvil', url:'audio/fm02/Quiet-Anvil.mp3' },
-                { title:'Too Far Apart', url:'audio/fm02/Too-Far-Apart.mp3' },
-                { title:'Why Do You Look Like a Dragon', url:'audio/fm02/Why-Do-You-Look-Like-a-Dragon.mp3' }
-            ];
-            const ADS = [
-                { title:'Ad Spot 01', url:'audio/ads/Ad01.mp3' },
-                { title:'Ad Spot 02', url:'audio/ads/Ad02.mp3' },
-                { title:'Ad Spot 03', url:'audio/ads/Ad03.mp3' }
-            ];
-
-            // Shuffle FM playlists for a fresh order each visit
-            shuffleArray(FM1);
-            shuffleArray(FM2);
-
-            /* Station dial */
-            const stations = [
-                { name:'88.3 Talk Radio',  list:AM,  ads:false },
-                { name:'103.1 Madness FM', list:FM1, ads:true  },
-                { name:'98.9 Uncanny FM',  list:FM2, ads:true  }
-            ];
-            // --- Per‑station playback state ---
-            const stationStates = stations.map(() => ({
-                songIdx: 0,        // which song/podcast episode is playing
-                adIdx: 0,          // which ad is next
-                playingAd: false,  // toggle song ↔ ad
-                playhead: 0,       // legacy – still used for ads / loops
-                lastSeen: null,    // last time we actually listened
-                startClock: null   // absolute epoch when this track started playing “on air”
-            }));
-            let stationIdx = 0;   // currently tuned station
-
-            function updateDisplay(text){
-                displayEl.textContent = text;
-                displayEl.style.transform = 'translateX(0)'; // Reset position
-                displayEl.classList.remove('scrolling'); // Remove previous animation class
-
-                // Calculate if scrolling is needed
-                requestAnimationFrame(() => {
-                    const textWidth = displayEl.scrollWidth; // Use scrollWidth to get full content width
-                    const containerWidth = displayContainer.clientWidth;
-
-                    if (textWidth > containerWidth) {
-                        const duration = textWidth / 50; // Adjust 50 for speed (pixels/second)
-                        displayEl.style.setProperty('--marquee-duration', `${duration}s`);
-                        displayEl.classList.add('scrolling');
-                    }
-                });
-            }
-
-            async function loadTrack(resumePosition = true, shouldAutoplay = false) {
-                return new Promise((resolve) => {
-                    // — detach old one‑off handlers —
-                    if (audio._onLoadedMetadata)  audio.removeEventListener('loadedmetadata', audio._onLoadedMetadata);
-                    if (audio._onError)           audio.removeEventListener('error',          audio._onError);
-
-                    const state = stationStates[stationIdx];
-                    let track;
-
-                    if (stations[stationIdx].ads && state.playingAd) {
-                        track = ADS[state.adIdx % ADS.length];
-                        updateDisplay("You’re listening to Obscura rAIdio");
-                    } else {
-                        const list = stations[stationIdx].list;
-                        track = list[state.songIdx % list.length];
-                        updateDisplay(`${stations[stationIdx].name}: ${track.title}`);
-                    }
-
-                    audio.src = encodeURI(track.url);
-                    audio.load();
-
-                    audio._onLoadedMetadata = () => {
-                        let target;
-
-                        if (state.startClock === null) {
-                            /* FIRST‑EVER tune‑in to this station during the session:
-                               drop somewhere random to mimic twisting the real dial */
-                            target = Math.random() * (audio.duration || 30);
-                            state.startClock = Date.now() - target * 1000;
-                        } else if (resumePosition) {
-                            /* Re‑tuning after leaving the station: pick up where the “broadcast
-                               clock” would be now. */
-                            const elapsed = (Date.now() - state.startClock) / 1000;
-                            target = (audio.duration && !Number.isNaN(audio.duration))
-                                   ? elapsed % audio.duration
-                                   : elapsed;
-                        } else {
-                            /* Continuous listening on the same station (song → ad → song):
-                               always start the new track from 0 s and reset the clock. */
-                            target = 0;
-                            state.startClock = Date.now();
-                        }
-
-                        audio.currentTime = target;
-
-                        // keep legacy fields in sync
-                        state.playhead = target;
-                        state.lastSeen = Date.now();
-
-                        if (shouldAutoplay) {
-                            audio.play().catch(e => {
-                                if (typeof process === 'undefined' || !process.env || process.env.NODE_ENV !== 'production') {
-                                    console.warn("Autoplay prevented:", e);
-                                }
-                                // If autoplay prevented, ensure it's paused.
-                                audio.pause();
-                            });
-                        } else {
-                            audio.pause();
-                        }
-                        resolve(); // track is ready
-                    };
-
-                    audio._onError = () => {
-                        console.error(`Error loading audio for ${track.url}. Verify file path & availability.`);
-                        updateDisplay("Error loading station...");
-                        resolve();
-                    };
-
-                    audio.addEventListener('loadedmetadata', audio._onLoadedMetadata, { once: true });
-                    audio.addEventListener('error',          audio._onError,          { once: true });
-                });
-            }
-
-            /* Handle song/ad sequencing */
-            audio.addEventListener('ended', () => {
-                const state = stationStates[stationIdx];
-                if (stations[stationIdx].ads) {
-                    state.playingAd = !state.playingAd;       // toggle song ↔ ad
-                    if (!state.playingAd) {
-                        state.songIdx++;                      // finished ad → next song
-                    } else {
-                        state.adIdx++;                        // finished song → first ad
-                    }
-                } else {
-                    state.songIdx++; // For AM, just loop to next track (or 0 if only one)
-                    if (state.songIdx >= AM.length) {
-                        state.songIdx = 0;
-                    }
-                }
-
-                state.playhead = 0;                           // fresh start for next track
-                // always autoplay next item
-                loadTrack(false, true);   // always autoplay next item
-            });
-
-            // Persist playhead while playing, and update lastSeen
-            audio.addEventListener('timeupdate', () => {
-                const currentStation = stationStates[stationIdx];
-                currentStation.playhead = audio.currentTime;
-                currentStation.lastSeen = Date.now();
-            });
-
-            /* Controls */
-            // --- Mute / Unmute ---
-            audio.muted = true;            // start muted so autoplay is allowed
-            updateMuteUI(); // Initial state for button text
-
-            function updateMuteUI(){
-                playBtn.textContent = audio.muted ? 'UNMUTE' : 'MUTE';
-            }
-            playBtn.addEventListener('click', () => {
-                audio.muted = !audio.muted;
-                updateMuteUI();
-                // If unmuting, ensure audio is playing (if it wasn't paused by user)
-                if (!audio.muted && audio.paused && audio.src) {
-                    if (typeof process === 'undefined' || !process.env || process.env.NODE_ENV !== 'production') {
-                        audio.play().catch(e => console.warn("Play prevented:", e));
-                    } else {
-                        audio.play().catch(() => {});
-                    }
-                } else if (audio.muted && !audio.paused) {
-                    // If muting while playing, still let it play silently
-                }
-            });
-
-            // Volume slider controls the actual volume level
-            function updateVolumeSlider(e) {
-                audio.volume = volSl.valueAsNumber;
-            }
-            volSl.addEventListener('input', updateVolumeSlider);
-            // Improved touch support for mobile volume slider
-            let isTouchingSlider = false;
-            volSl.addEventListener('touchstart', function(e) {
-                isTouchingSlider = true;
-            });
-            volSl.addEventListener('touchend', function(e) {
-                isTouchingSlider = false;
-            });
-            volSl.addEventListener('touchmove', function(e) {
-                if (!isTouchingSlider || e.touches.length === 0) return;
-                const touch = e.touches[0];
-                const rect = volSl.getBoundingClientRect();
-                let percent = (touch.clientX - rect.left) / rect.width;
-                percent = Math.max(0, Math.min(1, percent));
-                volSl.value = percent;
-                audio.volume = percent;
-                // Fire input event for visual feedback if needed
-                const event = new Event('input', { bubbles: true });
-                volSl.dispatchEvent(event);
-            });
-
-
-            // MODIFIED: seek function is now async and uses the new loadTrack signature
-            async function seek(dir){
-                const wasMuted = audio.muted;
-                
-                // Change to the new station index
-                stationIdx = (stationIdx + dir + stations.length) % stations.length;
-                
-                tuningDial.classList.add('seeking');
-                tuningDial.addEventListener('animationend',()=>tuningDial.classList.remove('seeking'),{once:true});
-                
-                // Await for the new track to load and its playhead to be set, 
-                // always autoplay next (it will play muted if it was muted before seek)
-                await loadTrack(true, true);
-                audio.muted = wasMuted; // Restore mute state after load
-                updateMuteUI();
-            }
-            seekLeftBtn.addEventListener('click', ()=>seek(-1));
-            tuningDial.addEventListener('click',  ()=>seek(1)); // Tuning dial seeks right
-            tuningDial.addEventListener('keydown', e=>{
-                if (e.key === 'Enter' || e.key === ' ') seek(1);
-            });
-            seekRightBtn.addEventListener('click',()=>seek(1));
-
-
-            /* Init */
-            audio.volume = volSl.valueAsNumber;
-            // Initial load of the first station. Play immediately (muted)
-            // We await it to ensure the initial track metadata is loaded before any user interaction.
-            await loadTrack(false, true);   // play immediately (muted)
-        }
 
         // --- FOOTER EASTER EGG ---
         function initFooterEasterEgg() {
