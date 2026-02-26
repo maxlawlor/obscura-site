@@ -37,7 +37,7 @@
         :root {
             --accent-color: #0455BF;      /* blue */
             --background-color: #FFCB00;  /* yellow */
-            --text-color: #1A1A1A;        /* off‑white */
+            --text-color: #1A1A1A;        /* near-black */
             --card-bg-color: #FAFAFA;     /* white for panels */
             --border-radius-xl: 1rem;
             --soft-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08),
@@ -45,7 +45,6 @@
             --spectral-gradient: linear-gradient(90deg,
                 hsl(210, 80%, 55%), hsl(220, 80%, 55%), hsl(230, 80%, 55%)); /* cleaned to a blue gradient */
             --font-sans: "Red Hat Display", system-ui, sans-serif;
-            --font-serif: "Red Hat Display", system-ui, sans-serif;  /* fallback – heading var was undefined */
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -82,7 +81,7 @@
         h1, h2, h3, .logo {
             color: var(--accent-color);
             font-weight: 600;
-            font-family: var(--font-serif);
+            font-family: var(--font-sans);
         }
 
         .logo {
@@ -135,11 +134,9 @@
             text-shadow:0 0 6px rgba(0,0,0,.6);
             pointer-events:none;
         }
-        /* .portfolio-intro { removed } */
 
 
         /* About / Contact */
-        /* Tools We Love section archived 2026-02-26 */
         .contact-links a:hover {
             text-decoration: underline;
              background-image: var(--spectral-gradient);
@@ -165,16 +162,6 @@
             outline: 2px solid var(--accent-color);
             outline-offset: 2px;
         }
-
-        /* 12-column grid - apply .grid-container and .col-* as needed */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 1rem;
-        }
-        /* Example .col-* */
-        .col-12 { grid-column: span 12; }
-        .col-6 { grid-column: span 6; }
 
         #landing-hero{
             position:relative;width:100%;height:100vh;overflow:hidden;
@@ -308,7 +295,6 @@
 
 
     <main>
-        <div id="now-clock-section"></div> <!-- Dummy anchor for "Now" hex nav item -->
 
         <section id="portfolio" class="container">
             <div class="section-content">
@@ -326,7 +312,6 @@
                 <h2>About Obscura</h2>
                 <p>Founded by <strong>Max Lawlor</strong>, Obscura is a Toronto post-production studio specializing in video editing, motion graphics, and generative AI. We’re obsessed with the future, the past, and the space where creativity meets technology. Also: high standards. And irreverence. That’s part of it too.</p>
 
-                <!-- Tools We Love section removed 2026-02-26 -->
             </div>
         </section>
 
@@ -354,82 +339,22 @@
     </div>
 
     <script type="module">
-        // Tools We Love JS removed 2026-02-26
-        // Import paths for CDN
-        const ANIME_PATH = 'https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.es.js';
-        const DAYJS_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js';
-        const DAYJS_TZ_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/timezone.js';
-        const DAYJS_UTC_PATH = 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/utc.js';
-
-        let Anime, Dayjs; // Modules to be loaded
-
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // --- UTILITIES ---
-        function smoothScrollTo(targetId) {
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                window.scrollTo({
-                    top: targetElement.offsetTop - 100, // Offset for fixed headers/nav
-                    behavior: prefersReducedMotion ? 'auto' : 'smooth'
-                });
-            }
-        }
 
+// --- INITIALIZATION FUNCTION ---
 
         // --- INITIALIZATION FUNCTION ---
-        async function initializeSite() {
+        function initializeSite() {
             if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-            // Clear any URL hash so the browser can't auto‑scroll to anchors on load
             if (location.hash) {
                 history.replaceState(null, '', location.pathname + location.search);
             }
             window.scrollTo(0, 0);
 
-            const importPromises = [];
-
-            // Anime.js import
-            importPromises.push(import(ANIME_PATH).then(module => {
-                Anime = module.default;
-                window.Anime = module.default; // Assign to global window for consistency/older code
-            }));
-
-            // Dayjs and its plugins imports
-            importPromises.push(import(DAYJS_PATH).then(() => {
-                Dayjs = window.dayjs; // Dayjs attaches itself to window.dayjs
-                return Promise.all([
-                    import(DAYJS_UTC_PATH),
-                    import(DAYJS_TZ_PATH)
-                ]);
-            }).then(() => {
-                // Extend Dayjs with plugins after both plugin modules are loaded
-                Dayjs.extend(window.dayjs_plugin_utc);
-                Dayjs.extend(window.dayjs_plugin_timezone);
-            }).catch(error => {
-                console.error("Failed to load Dayjs or its plugins:", error);
-                // Optionally handle this error more gracefully, e.g., disable clock features
-            }));
-
-            // Wait for all import promises to resolve
-            await Promise.all(importPromises);
-
-            // Now that all libraries are guaranteed to be loaded and set up
-            initNav();
             initPortfolio();
             initFooterEasterEgg();
         }
-
-
-        // (hero canvas code removed)
-
-
-        // --- SACRED-NETWORK NAV OVERLAY ---
-        function initNav() {
-            // Navigation overlay removed; nothing to initialize.
-        }
-
-        // ("NOW" clock widget removed)
-
 
         // --- PORTFOLIO SECTION ---
         function initPortfolio() {
