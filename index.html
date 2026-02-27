@@ -342,9 +342,6 @@
     <script type="module">
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-
-// --- INITIALIZATION FUNCTION ---
-
         // --- INITIALIZATION FUNCTION ---
         function initializeSite() {
             if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -448,7 +445,7 @@
         const lightboxClose = document.getElementById('lightbox-close');
 
         // Per-video start offsets (seconds) to skip slates/beeps
-        const VIDEO_START_OFFSETS = { 'rfxJ3c8gAgc': 1 };
+        const VIDEO_START_OFFSETS = { 'rfxJ3c8gAgc': 2, '486eRp3JdjI': 2, 'SZOTSaofOG4': 2 };
 
         function openLightbox(id, title='') {
             if (!lightbox) return;
