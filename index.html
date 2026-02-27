@@ -189,6 +189,8 @@
             animation:fadeIn .8s ease-out .6s forwards;
         }
         .landing-link:hover{color:#fff;}
+        .landing-link--disabled{animation:fadeInDim .8s ease-out .6s forwards !important;}
+        @keyframes fadeInDim{from{opacity:0;}to{opacity:0.4;}}
         section:not(#landing-hero){scroll-margin-top:80px;}
 
         /* Portfolio reveal animation */
@@ -287,7 +289,7 @@
                  class="logo" />
             <nav class="landing-nav" role="navigation">
                 <a href="#portfolio"      class="landing-link">Editorial</a>
-                <span class="landing-link" style="opacity:0.4;cursor:default;">Generative AI</span>
+                <span class="landing-link landing-link--disabled" style="cursor:default;">Generative AI</span>
                 <a href="#about"          class="landing-link">About</a>
                 <a href="#connect"        class="landing-link">Connect</a>
             </nav>
@@ -457,9 +459,8 @@
 
         let ytPlayer = null;
 
-        async function openLightbox(id, title='') {
-            if (!lightbox) return;
-            await ytApiReady;
+        function openLightbox(id, title='') {
+            if (!lightbox || typeof YT === 'undefined' || !YT.Player) return;
             const startSec = VIDEO_START_OFFSETS[id] || 0;
 
             // Clean up any previous player
